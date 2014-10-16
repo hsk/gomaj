@@ -136,7 +136,7 @@ def:
   */
 /*  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }*/
 
-/*  | ID CLASS LBRACE RBRACE { SClass($1, "", []) }*/
+  | ID CLASS LBRACE RBRACE { SClass($1, "", []) }
 /*  | ID CLASS LBRACE defs RBRACE { SClass($1, "", $4) }*/
 /*  | ID CLASS LPAREN RPAREN {
       SClass($1, "",[SCon([],SBlock [])])
