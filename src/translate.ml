@@ -30,6 +30,7 @@ let rec trans_e = function
 
 let rec trans_s = function
 
+  | SAccess(a,s) -> SAccess(a, trans_s s)
   | SExp(e) ->
     SExp(trans_e e)
 

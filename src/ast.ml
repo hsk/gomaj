@@ -2,7 +2,7 @@ type t =
   | Ty of string
   | TFun of t * t list
   | TPtr of t
-
+  | TGen of string * t
 type e =
   | EInt of int
   | EBin of e * string * e
@@ -14,6 +14,13 @@ type e =
   | EString of string
   | EEmpty
   | ECast of t * e
+
+type a =
+  | APublic
+  | AProtected
+  | APrivate
+  | AStatic
+  | AFinal
 
 type s = 
   | SBlock of s list
@@ -29,6 +36,8 @@ type s =
   | STrait of  string * (t * s) list
   | SImpl of string * string * s list
   | SList of s list
+  | SAccess of a list * s
+
 
 let (|>) a b = b a
 

@@ -21,6 +21,14 @@ let rec print_t pp sp ppf = function
       t
     )
 
+  | TGen(s,t) ->
+    begin match s with
+      | "Array" -> fprintf ppf "%a[]" (print_t pp sp) t
+      | _ ->
+        fprintf ppf "%s<%a>"
+          s
+          (print_t pp sp) t
+    end
   | TFun(r,ts) ->
     fprintf ppf "%a(*%s)(%a)" <|_5(
       print_t<|_2("", sp), r,
@@ -55,6 +63,13 @@ let rec print_e sp ppf = function
       op,
       print_e "", e1
     )
+  | EBin(e1,("." as op),e2) ->
+    fprintf ppf "%s%a%s%a" <|_6(
+      sp,
+      print_e "", e1,
+      op,
+      print_e "", e2
+    )
   | EBin(e1,op,e2) ->
     fprintf ppf "%s(%a %s %a)" <|_6(
       sp,
@@ -84,14 +99,27 @@ let rec print_e sp ppf = function
       print_e "", e
     )
 
+let print_a ppf = function
+  | APublic -> fprintf ppf "public"
+  | APrivate -> fprintf ppf "private"
+  | AProtected -> fprintf ppf "protected"
+  | AStatic -> fprintf ppf "static"
+  | AFinal -> fprintf ppf "final"
+
 let rec print_s ppf (s:s):unit = 
   let rec print sp ppf = function
+
+    | SAccess(acs, s) ->
+      fprintf ppf "%s%a%a"
+        sp
+        (print_ls " " print_a) acs
+        (print sp) s
 
     | SEmpty ->
       ()
 
     | SExp e ->
-      fprintf ppf "%a;"
+      fprintf ppf "/*sexp*/%a;/*sexp*/"
         (print_e sp) e
 
     | SRet e ->
@@ -109,7 +137,7 @@ let rec print_s ppf (s:s):unit =
       end
 
     | SBlock ls ->
-      fprintf ppf "{\n%a\n%s}"
+      fprintf ppf "{\n/**/%a/**/\n%s}"
         (print_ls "\n" (print (sp ^ "  "))) ls
         sp
 

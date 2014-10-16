@@ -11,12 +11,19 @@ rule token = parse
 | ')' { RPAREN }
 | '{' { LBRACE }
 | '}' { RBRACE }
+| '[' { LBRACK }
+| ']' { RBRACK }
 | "return" { RETURN }
 | "::" { CAST }
 | '@' { AT }
 | "new" { NEW }
 | "package" { PACKAGE(import lexbuf) }
 | "import" { IMPORT(import lexbuf) }
+| "static" { STATIC }
+| "public" { PUBLIC }
+| "protected" { PROTECTED }
+| "private" { PRIVATE }
+| "final" { FINAL }
 | "this" { THIS }
 | "class" { CLASS }
 | "trait" { TRAIT }

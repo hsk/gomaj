@@ -3,4 +3,8 @@ Hello class {
 	a:int
 	b:int=1
 	c():int= return 1
+
+	public static main(argv:Array[String]):void = {
+		System.out.println("hello world")
+	}
 }
