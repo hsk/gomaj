@@ -1,2 +1,5 @@
 package example
-Hello class {}
+Hello class {
+	a:int
+	b:int=1
+}

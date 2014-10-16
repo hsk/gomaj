@@ -130,13 +130,10 @@ def:
 /*  | ID LPAREN prms RPAREN COLON ID ASSIGN stmt{
       SFun(Ty $6, $1, $3, addBlock $8)
     }*/
-    /*
   | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
-  */
-/*  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }*/
-
+  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
   | ID CLASS LBRACE RBRACE { SClass($1, "", []) }
-  | ID CLASS LBRACE stmts RBRACE { SClass($1, "", $4) }
+  | ID CLASS LBRACE defs RBRACE { SClass($1, "", $4) }
 /*  | ID CLASS LPAREN RPAREN {
       SClass($1, "",[SCon([],SBlock [])])
     }
