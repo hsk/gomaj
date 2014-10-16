@@ -6,7 +6,7 @@ let trans input output =
   let ast = Parser.defs Lexer.token lexbuf in
   close_in inp;
 
-  let ast = Translate.trans_s(Ast.SList(ast)) in
+  let ast = Ast.SList(ast) in
 
   let out = open_out output in
   Gen_java.print_s (Format.formatter_of_out_channel out) ast;

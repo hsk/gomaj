@@ -7,7 +7,7 @@ let rec print_ls sep p ppf = function
   | x::xs ->
     fprintf ppf "%a%s%a" p x sep (print_ls sep p) xs
 
-let rec print_t pp sp ppf = function
+let rec print_t sp ppf = function
 
   | Ty(s) ->
     fprintf ppf "%s%s" <|_2(
@@ -15,26 +15,14 @@ let rec print_t pp sp ppf = function
       s
     )
 
-  | TPtr(t) ->
-    fprintf ppf "%a*" <|_2(
-      print_t<|_2(pp, sp),
-      t
-    )
-
   | TGen(s,t) ->
     begin match s with
-      | "Array" -> fprintf ppf "%a[]" (print_t pp sp) t
+      | "Array" -> fprintf ppf "%a[]" (print_t sp) t
       | _ ->
         fprintf ppf "%s<%a>"
           s
-          (print_t pp sp) t
+          (print_t sp) t
     end
-  | TFun(r,ts) ->
-    fprintf ppf "%a(*%s)(%a)" <|_5(
-      print_t<|_2("", sp), r,
-      pp,
-      print_ls<|_2(", ", print_t<|_2("", "")), ts
-    )
 let rec print_e sp ppf = function
 
   | EEmpty ->
@@ -71,7 +59,7 @@ let rec print_e sp ppf = function
       print_e "", e2
     )
   | EBin(e1,op,e2) ->
-    fprintf ppf "%s(%a %s %a)" <|_6(
+    fprintf ppf "%s%a %s %a" <|_6(
       sp,
       print_e "", e1,
       op,
@@ -95,7 +83,7 @@ let rec print_e sp ppf = function
     )
   | ECast(t,e) ->
     fprintf ppf "((%a)%a)"<|_4(
-      print_t "" sp, t,
+      print_t sp, t,
       print_e "", e
     )
 
@@ -144,23 +132,24 @@ let rec print_s ppf (s:s):unit =
     | SLet (t, id, EEmpty) ->
       fprintf ppf "%s%a %a;"
         sp
-        (print_t "" "") t
+        (print_t "") t
         (print_e "") id
 
     | SLet (t, id, e) ->
       fprintf ppf "%s%a %a = %a;"
         sp
-        (print_t "" "") t
+        (print_t "") t
         (print_e "") id
         (print_e "") e
 
-    | SCon(tis, e) ->
+    | SCon(id, tis, e) ->
       let f ppf (t,i) =
         fprintf ppf "%a %s"
-          (print_t "" "") t
+          (print_t "") t
           i
       in
-      fprintf ppf "(%a)%a"
+      fprintf ppf "%s(%a)%a"
+        id
         (print_ls ", " f) tis
         (print ("  "^sp)) e
 
@@ -183,24 +172,32 @@ let rec print_s ppf (s:s):unit =
       fprintf ppf "// sfun@.";
       let f ppf (t,a) =
         fprintf ppf "%a %s"
-          (print_t "" "") t
+          (print_t "") t
           a
       in
       fprintf ppf "%a %s(%a)%a"
-        (print_t "" "") t
+        (print_t "") t
         id
         (print_ls ", " f) ts 
         (print_block sp "\n") e2
 
     | SClass (id, super, ss) ->
-      fprintf ppf "// kore@.";
       let f ppf ss =
         ss |> List.iter (print sp ppf)
       in
       fprintf ppf "%sclass %s%s{\n%s\n%a};\n"
         sp
         id
-        (if super = "" then "" else ":" ^ super)
+        (if super = "" then "" else " extends " ^ super)
+        sp
+        f ss
+    | STrait (id, ss) ->
+      let f ppf ss =
+        ss |> List.iter (fun s -> print sp ppf s; fprintf ppf ";@.")
+      in
+      fprintf ppf "%sinterface %s{\n%s\n%a};\n"
+        sp
+        id
         sp
         f ss
 

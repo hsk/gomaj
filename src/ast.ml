@@ -1,7 +1,5 @@
 type t =
   | Ty of string
-  | TFun of t * t list
-  | TPtr of t
   | TGen of string * t
 type e =
   | EInt of int
@@ -32,8 +30,8 @@ type s =
   | SPackage of string
   | SLet of t * e * e
   | SClass of string * string * s list
-  | SCon of (t * string) list * s
-  | STrait of  string * (t * s) list
+  | SCon of string * (t * string) list * s
+  | STrait of  string * s list
   | SImpl of string * string * s list
   | SList of s list
   | SAccess of a list * s

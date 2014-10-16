@@ -9,7 +9,6 @@ FILES[] =
   parser
   lexer
   utils
-  translate
   gen_java
   main
 

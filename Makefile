@@ -2,7 +2,7 @@ all:
 	cd src; omake
 
 hello:
-	./gomajjc example/Hello.gomaj example/Hello.java
+	./gomajc example/Hello.gomaj example/Hello.java
 	javac example/Hello.java
 	java example.Hello
 
