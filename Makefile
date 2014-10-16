@@ -2,20 +2,24 @@ all:
 	cd src; omake
 
 hello:
-	./gomajc example/Hello.gomaj example/Hello.java
+	./gomajjc example/Hello.gomaj example/Hello.java
 	javac example/Hello.java
 	java example.Hello
 
 fib:
-	./gomac example/fib.goma example/fib.cpp
-	g++ example/fib.cpp -o fib
-	./fib
+	./gomajc example/Fib.gomaj example/Fib.java
+	javac example/Fib.java
+	java example.Fib
 
-calc: example/calc.goma
-	./gomac example/calc.goma example/calc.cpp
-	g++ example/calc.cpp -o calc
-	./calc
+calc: example/Calc.gomaj
+	./gomajc example/Calc.gomaj example/Calc.java
+	javac example/Calc.java
+	java example.Calc
 
 clean:
 	cd src; omake clean
-	rm -rf gomac gomac.opt hello calc fib example/*.cpp src/.omakedb
+	rm -rf gomajc gomajc.opt example/*.java example/*.class src/.omakedb
+
+
+
+

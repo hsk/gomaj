@@ -7,6 +7,8 @@ let digit = ['0'-'9']
 
 rule token = parse
 | space+ { token lexbuf }
+| "/*" { comment lexbuf }
+| "//" _* ['\n' '\r'] { token lexbuf }
 | '(' { LPAREN }
 | ')' { RPAREN }
 | '{' { LBRACE }
@@ -43,6 +45,8 @@ rule token = parse
 | '>' { GT }
 | "<=" { LE }
 | ">=" { GE }
+| "==" { EQ }
+| "!=" { NE }
 | '.' { DOT }
 | ',' { COMMA }
 | ';' { SEMICOLON }
@@ -69,3 +73,7 @@ and import = parse
         (Lexing.lexeme lexbuf)
         (Lexing.lexeme_start lexbuf)
         (Lexing.lexeme_end lexbuf)) }
+
+and comment = parse
+| "*/" { token lexbuf }
+| _ { comment lexbuf }

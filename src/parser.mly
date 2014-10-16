@@ -9,8 +9,6 @@ let addBlock = function
 
 %token <int> INT
 %token <string> ID
-%token SUB
-%token ADD
 %token SEMICOLON
 %token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
 %token PRINT
@@ -26,11 +24,16 @@ let addBlock = function
 %token IMPLEMENT RIMPLEMENT TRAIT
 %token ARROW MEMBER FARROW
 %token STATIC PUBLIC PRIVATE PROTECTED FINAL
+
+%token EQ NE
 %token LT GT LE GE
+%token SUB ADD
 %token MUL AMP DIV
+
 %token CAST NEW AT
 %right ASSIGN
 %right CAST
+%left EQ NE
 %left LT GT LE GE
 %left ADD SUB
 %left MUL DIV
@@ -65,29 +68,28 @@ exps:
 
 exp:
   | simple_exp { $1 }
-/*
+
   | exp ASSIGN exp { EBin($1, "=", $3) }
-  | exp ADD exp { EBin($1, "+", $3) }
-  | exp SUB exp { EBin($1, "-", $3) }
-  | exp MUL exp { EBin($1, "*", $3) }
-  | exp DIV exp { EBin($1, "/", $3) }
-  */
+
   | exp DOT exp { EBin($1, ".", $3) }
-  /*
-  | exp MEMBER exp { EBin($1, "->", $3) }
+
+  | exp EQ exp { EBin($1, "==", $3)}
+  | exp NE exp { EBin($1, "!=", $3)}
+
   | exp LT exp { EBin($1, "<", $3) }
   | exp GT exp { EBin($1, ">", $3) }
   | exp LE exp { EBin($1, "<=", $3) }
   | exp GE exp { EBin($1, ">=", $3) }
-  | AMP exp { EPre("&", $2)}
-  | MUL exp { EPre("*", $2)}
+
+  | exp ADD exp { EBin($1, "+", $3) }
+  | exp SUB exp { EBin($1, "-", $3) }
+
+  | exp MUL exp { EBin($1, "*", $3) }
+  | exp DIV exp { EBin($1, "/", $3) }
+
   | NEW exp { EPre("new", $2)}
-  | AT exp { EBin(EVar "self", "->", $2)}
+  | AT exp { EBin(EVar "self", ".", $2)}
   | exp CAST typ { ECast($3, $1)}
-  | exp FARROW ID DOT ID LPAREN RPAREN {
-      ECallM($3, EBin($1, "->", EVar $5), [])
-    }
-    */
 /*  | init { $1 }
 
 
