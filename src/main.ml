@@ -3,7 +3,7 @@ let trans input output =
 
   let inp = open_in input in
   let lexbuf = Lexing.from_channel inp in
-  let ast = Parser.stmts Lexer.token lexbuf in
+  let ast = Parser.defs Lexer.token lexbuf in
   close_in inp;
 
   let ast = Translate.trans_s(Ast.SList(ast)) in

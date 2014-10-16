@@ -37,8 +37,8 @@ let addBlock = function
 %left prec_app
 %left DOT ARROW MEMBER
 %left AT
-%type <Ast.s list> stmts
-%start stmts
+%type <Ast.s list> defs
+%start defs
 
 %%
 
@@ -109,7 +109,6 @@ stmts:
 
 stmt:
   | exp { SExp($1) }
-  | def { $1 }
   /*
   | RETURN exp { SRet($2) }
   | RETURN { SRet EEmpty }
@@ -137,7 +136,7 @@ def:
 /*  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }*/
 
   | ID CLASS LBRACE RBRACE { SClass($1, "", []) }
-/*  | ID CLASS LBRACE defs RBRACE { SClass($1, "", $4) }*/
+  | ID CLASS LBRACE stmts RBRACE { SClass($1, "", $4) }
 /*  | ID CLASS LPAREN RPAREN {
       SClass($1, "",[SCon([],SBlock [])])
     }
