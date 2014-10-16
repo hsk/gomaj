@@ -2,4 +2,5 @@ package example
 Hello class {
 	a:int
 	b:int=1
+	c():int= return 1
 }

@@ -109,9 +109,9 @@ stmts:
 
 stmt:
   | exp { SExp($1) }
-  /*
   | RETURN exp { SRet($2) }
   | RETURN { SRet EEmpty }
+  /*
   | LBRACE RBRACE { SBlock [] }
   | LBRACE stmts RBRACE { SBlock $2 }
   | IF LPAREN exp RPAREN stmt { SIf($3, $5, SEmpty)}
@@ -124,9 +124,9 @@ defs:
 def:
   | PACKAGE { SPackage($1) }
 
-/*  | ID LPAREN RPAREN COLON ID ASSIGN stmt %prec prec_app {
+  | ID LPAREN RPAREN COLON ID ASSIGN stmt %prec prec_app {
       SFun(Ty $5, $1, [], addBlock $7)
-    }*/
+    }
 /*  | ID LPAREN prms RPAREN COLON ID ASSIGN stmt{
       SFun(Ty $6, $1, $3, addBlock $8)
     }*/
