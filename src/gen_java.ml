@@ -107,7 +107,7 @@ let rec print_s ppf (s:s):unit =
       ()
 
     | SExp e ->
-      fprintf ppf "/*sexp*/%a;/*sexp*/"
+      fprintf ppf "%a;"
         (print_e sp) e
 
     | SRet e ->
@@ -125,7 +125,7 @@ let rec print_s ppf (s:s):unit =
       end
 
     | SBlock ls ->
-      fprintf ppf "{\n/**/%a/**/\n%s}"
+      fprintf ppf "{\n%a\n%s}"
         (print_ls "\n" (print (sp ^ "  "))) ls
         sp
 
