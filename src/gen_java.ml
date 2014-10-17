@@ -1,16 +1,16 @@
 open Printf
 open Ast
 
-module M = Map.Make (String)
-
-let sp = ref ""
 let fp = ref stdout
+let sp = ref ""
 
 let block f =
-  let back = !sp in
+  let old_indent_space = !sp in
   sp := !sp ^ "  ";
   f ();
-  sp := back
+  sp := old_indent_space
+
+module M = Map.Make (String)
 
 let infixs =
   List.fold_left (fun m (k,v,l) -> M.add k (v,l) m) M.empty
