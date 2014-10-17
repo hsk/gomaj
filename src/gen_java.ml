@@ -1,9 +1,9 @@
 open Printf
 open Ast
 
-let sp =
-  ref ""
+module M = Map.Make (String)
 
+let sp = ref ""
 let fp = ref stdout
 
 let block f =
@@ -11,6 +11,38 @@ let block f =
   sp := !sp ^ "  ";
   f ();
   sp := back
+
+let infixs =
+  List.fold_left (fun m (k,v,l) -> M.add k (v,l) m) M.empty
+    [
+      "=",1, false;
+      "==",2, true;
+      "!=",2, true;
+      "<",3, true;
+      ">",3, true;
+      "<=",4, true;
+      ">=",5, true;
+      "+",6, true;
+      "-",6, true;
+
+      "/",7, true;
+      "*",7, true
+    ]
+
+let prefixs =
+  List.fold_left (fun m (k,v,ident) -> M.add k (v,ident) m ) M.empty
+    [
+      "new",8,true;
+      "!",8,false;
+      "-",8,false
+    ]
+
+let postfixs =
+  List.fold_left (fun m (k,v,ident) -> M.add k (v,ident) m ) M.empty
+    [
+      "++",9,false;
+      "--",9,false
+    ]
 
 let rec print_ls sep p = function
   | [] -> ()
@@ -38,7 +70,7 @@ let rec print_t = function
         fprintf !fp ">"
     end
 
-let rec print_e ?(paren=true) = function 
+let rec print_e ?(paren=true) ?(p=0) = function 
   | EEmpty -> ()
 
   | EInt i -> fprintf !fp "%d" i
@@ -48,8 +80,25 @@ let rec print_e ?(paren=true) = function
   | EString i -> fprintf !fp "%s" i
 
   | EPre(op, e1) ->
-    fprintf !fp "%s " op;
-    print_e e1
+
+    let (p1,ident) = (M.find op prefixs) in
+    let paren = paren && p1 < p in
+
+    if paren then fprintf !fp "(";
+    if ident then fprintf !fp " %s " op else fprintf !fp " %s" op;
+    print_e e1 ~p:p1;
+    if paren then fprintf !fp ")"
+
+  | EPost(e1, op) ->
+
+    let (p1,ident) = (M.find op postfixs) in
+    let paren = paren && p1 <= p in
+
+    if paren then fprintf !fp "(";
+    if ident then fprintf !fp " %s " op
+             else fprintf !fp " %s" op;
+    print_e e1 ~p:(p1-1);
+    if paren then fprintf !fp ")"
 
   | EBin(e1, ".", e2) ->
     print_e e1;
@@ -57,22 +106,24 @@ let rec print_e ?(paren=true) = function
     print_e e2
 
   | EBin(e1, op, e2) ->
+    let (p1,l) = (M.find op infixs) in
+    let paren = paren && (if l then p1 <= p else p1 < p) in
     if paren then fprintf !fp "(";
-    print_e e1;
+    print_e e1 ~p:(if l then (p1-1) else (p1+1));
     fprintf !fp "%s" op;
-    print_e e2;
+    print_e e2 ~p:p1;
     if paren then fprintf !fp ")"
 
   | ECall(e1, es) ->
     print_e e1;
     fprintf !fp "(";
-    es |> print_ls ", " (print_e ~paren:false);
+    print_ls ", " (print_e ~paren:false) es;
     fprintf !fp ")"
 
   | EArr(e1, es) ->
     print_e e1;
     fprintf !fp "[";
-    es |> print_ls ", " (print_e ~paren:false);
+    print_ls ", " (print_e ~paren:false) es;
     fprintf !fp "]";
 
   | ECast(t, e) ->
@@ -95,7 +146,7 @@ let rec print_s ?(nest=true) (s:s):unit =
   match s with
 
   | SAccess(acs, s) ->
-    acs |> print_iter print_a " ";
+    print_iter print_a " " acs;
     print_s ~nest:false s
 
   | SEmpty ->
@@ -115,9 +166,9 @@ let rec print_s ?(nest=true) (s:s):unit =
 
   | SBlock ss ->
     fprintf !fp "{\n";
-    (fun()->
+    block (fun()->
       print_iter print_s "\n" ss
-    )|>block;
+    );
     fprintf !fp "%s}" !sp
 
   | SLet (t, id, EEmpty) ->
@@ -136,10 +187,10 @@ let rec print_s ?(nest=true) (s:s):unit =
 
   | SCon(id, tis, e) ->
     fprintf !fp "%s(" id;
-    tis |> print_ls ", " (fun (t, i) ->
+    print_ls ", " (fun (t, i) ->
       print_t t;
       fprintf !fp " %s" i
-    );
+    ) tis;
     fprintf !fp ") ";
     print_s e ~nest:false
 
@@ -150,7 +201,7 @@ let rec print_s ?(nest=true) (s:s):unit =
     in
     print_t t;
     fprintf !fp " %s(" id;
-    ts |> print_ls ", " f;
+    print_ls ", " f ts;
     fprintf !fp ") ";
     print_s s ~nest:false;
 
@@ -174,16 +225,16 @@ let rec print_s ?(nest=true) (s:s):unit =
     if super <> "" then
       fprintf !fp " extends %s" super;
     fprintf !fp " {\n";
-    (fun() ->
-      ss|>print_iter print_s "\n"
-    )|>block;
+    block (fun() ->
+      print_iter print_s "\n" ss
+    );
     fprintf !fp "%s}" !sp
 
   | STrait (id, ss) ->
     fprintf !fp "interface %s {\n" id;
-    (fun()->
-      ss |> print_iter print_s ";\n"
-    )|>block;
+    block (fun()->
+      print_iter print_s ";\n" ss
+    );
     fprintf !fp "\n%s}\n" !sp
 
 and print_block ed = function
@@ -198,15 +249,15 @@ and print_block ed = function
     print_s e ~nest:false;
 
   | e ->
-    (fun () ->
+    block(fun () ->
       fprintf !fp "\n";
       print_s e;
       fprintf !fp "%s" ed
-    )|>block
+    )
 
 let print_prog ffp (Prog(ls)) =
   sp := "";
   fp := ffp;
-  ls |> print_ls "\n" print_s;
+  print_ls "\n" print_s ls;
   fp := stdout
 

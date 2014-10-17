@@ -10,10 +10,14 @@ let trans input output =
   Gen_java.print_prog out ast;
   close_out out
 
-let _ =
+let gomaj2java src =
+  let len = String.length src in
+  if String.sub src (len - 6) 6 = ".gomaj" then
+    String.sub src 0 (len - 6) ^ ".java"
+  else
+    failwith "filename is bad."
 
-  trans Sys.argv.(1) Sys.argv.(2)
-  (*
-  print Utils.exec("g++ a.cpp");
-  print Utils.exec("./a.out")
-  *)
+let _ =
+  let gomaj = Sys.argv.(1) in
+  let java = gomaj2java(gomaj) in
+  trans gomaj java

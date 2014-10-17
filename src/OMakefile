@@ -8,7 +8,6 @@ FILES[] =
   ast
   parser
   lexer
-  utils
   gen_java
   main
 

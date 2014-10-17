@@ -19,10 +19,9 @@ let addBlock = function
 %token <string> PACKAGE
 %token <string> IMPORT
 %token <string> STRING
-%token CLASS THIS DOT
+%token CLASS THIS DOT ARROW
 %token IF ELSE
-%token IMPLEMENT RIMPLEMENT TRAIT
-%token ARROW MEMBER FARROW
+%token TRAIT
 %token STATIC PUBLIC PRIVATE PROTECTED FINAL
 
 %token EQ NE
@@ -39,7 +38,7 @@ let addBlock = function
 %left MUL DIV
 %left NEW
 %left prec_app
-%left DOT ARROW MEMBER
+%left DOT ARROW
 %left AT
 %type <Ast.prog> prog
 %start prog
@@ -69,7 +68,7 @@ exps:
 
 exp:
   | simple_exp { $1 }
-
+  | SUB exp { EPre("-", $2)}
   | exp ASSIGN exp { EBin($1, "=", $3) }
 
   | exp DOT exp { EBin($1, ".", $3) }
@@ -107,6 +106,8 @@ stmt:
   | LBRACE stmts RBRACE { SBlock($2) }
   | IF LPAREN exp RPAREN stmt { SIf($3, $5, SEmpty) }
   | IF LPAREN exp RPAREN stmt ELSE stmt { SIf($3, $5, $7) }
+  | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
+  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
 
 defs:
   | adef { [$1] }
@@ -147,33 +148,33 @@ def:
     }
 
   | ID CLASS LPAREN prms RPAREN {
-      let mems = $4 |> List.map begin fun (ty, id) ->
+      let mems = List.map begin fun (ty, id) ->
         SLet(ty, EVar id, EEmpty)
-      end in
-      let inits = $4 |> List.map begin fun (ty, id) ->
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
         SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end in
+      end $4 in
       SClass($1, "Object", SCon($1, $4,SBlock inits)::mems)
     }
 
   | ID CLASS LPAREN prms RPAREN LBRACE RBRACE {
-      let mems = $4 |> List.map begin fun (ty, id) ->
+      let mems = List.map begin fun (ty, id) ->
         SLet(ty, EVar id, EEmpty)
-      end in
-      let inits = $4 |> List.map begin fun (ty, id) ->
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
         SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end in
-      SClass($1, "Object", SCon($1, $4,SBlock inits)::mems)
+      end $4 in
+      SClass($1, "Object", SCon($1, $4, SBlock inits)::mems)
     }
 
   | ID CLASS LPAREN prms RPAREN LBRACE defs RBRACE {
-      let mems = $4 |> List.map begin fun (ty, id) ->
+      let mems = List.map begin fun (ty, id) ->
         SLet(ty, EVar id, EEmpty)
-      end in
-      let inits = $4 |> List.map begin fun (ty, id) ->
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
         SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end in
-      SClass($1, "Object", SCon($1, $4,SBlock inits)::mems@$7)
+      end $4 in
+      SClass($1, "Object", SCon($1, $4, SBlock inits)::mems @ $7)
     }
 
   | ID TRAIT LBRACE trait_defs RBRACE { STrait($1, $4) }

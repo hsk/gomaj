@@ -29,11 +29,7 @@ rule token = parse
 | "this" { THIS }
 | "class" { CLASS }
 | "trait" { TRAIT }
-| "<:" { IMPLEMENT }
-| ":>" { RIMPLEMENT }
 | "=>" { ARROW }
-| "->" { MEMBER }
-| "|>" { FARROW }
 | "if" { IF }
 | "else" { ELSE }
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
