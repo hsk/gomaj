@@ -1,32 +1,37 @@
 # GomaJ Programming Language
 
-GomaJ is next generation JVM Programming Language.
+GomaJ is simple translator to Java language, namely, GomaJ is AltJ.
+This compiler made by OCaml, OCamlYacc and OCamlLex.
 
-GomaJ translate to Java.
-
-## install
+## build
 
     $ make
 
 ## hello world
 
-example/Hello.gomaj
+#### example/Hello.gomaj
 
 ```
 package example
 Hello class {
-  public static main():void= {
+  public static main():void = {
     System.out.println("hello world")
   }
 }
 ```
+
+#### build & run
 
     $ ./javac example/hello.gomaj example/Hello.java
     $ javac example/Hello.java
     $ ./java example.Hello
     hello world!
 
-example/Hello.java
+or
+
+    $ make hello
+
+#### example/Hello.java
 
 ```
 package example;
@@ -37,3 +42,11 @@ class Hello {
 }
 ```
 
+## examples
+
+    $ make fib
+    $ make test
+
+## clean
+
+    $ make clean

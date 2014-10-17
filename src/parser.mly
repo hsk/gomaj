@@ -7,39 +7,45 @@ let addBlock = function
 
 %}
 
-%token <int> INT
-%token <string> ID
-%token SEMICOLON
-%token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
-%token PRINT
-%token EOF
-%token COLON COMMA
-%token ASSIGN
-%token RETURN
 %token <string> PACKAGE
 %token <string> IMPORT
 %token <string> STRING
-%token CLASS THIS DOT ARROW
-%token IF ELSE
-%token TRAIT
-%token STATIC PUBLIC PRIVATE PROTECTED FINAL
+%token <int> INT
+%token <string> ID
 
+%token STATIC PUBLIC PRIVATE PROTECTED FINAL
+%token CLASS THIS TRAIT
+%token IF ELSE
+%token RETURN
+%token COLON COMMA SEMICOLON
+
+%token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
+
+%token ASSIGN
+%token CAST
 %token EQ NE
 %token LT GT LE GE
 %token SUB ADD
-%token MUL AMP DIV
+%token MUL DIV
+%token NEW
+%token DOT
+%token AT
 
-%token CAST NEW AT
+%token EOF
+
+/* operator precedence */
+
 %right ASSIGN
 %right CAST
 %left EQ NE
 %left LT GT LE GE
 %left ADD SUB
 %left MUL DIV
+%left DOT
+%left AT
 %left NEW
 %left prec_app
-%left DOT ARROW
-%left AT
+
 %type <Ast.prog> prog
 %start prog
 
@@ -60,7 +66,7 @@ simple_exp:
   | LPAREN exp RPAREN { $2 }
   | INT { EInt($1) }
   | STRING { EString($1) }
-  | ID { EVar($1)}
+  | ID { EVar($1) }
 
 exps:
   | exp { [$1] }
@@ -68,10 +74,7 @@ exps:
 
 exp:
   | simple_exp { $1 }
-  | SUB exp { EPre("-", $2)}
   | exp ASSIGN exp { EBin($1, "=", $3) }
-
-  | exp DOT exp { EBin($1, ".", $3) }
 
   | exp EQ exp { EBin($1, "==", $3) }
   | exp NE exp { EBin($1, "!=", $3) }
@@ -87,7 +90,11 @@ exp:
   | exp MUL exp { EBin($1, "*", $3) }
   | exp DIV exp { EBin($1, "/", $3) }
 
+  | exp DOT exp { EBin($1, ".", $3) }
+
   | NEW exp { EPre("new", $2) }
+  | SUB exp %prec NEW { EPre("-", $2)}
+
   | AT exp { EBin(EVar("this"), ".", $2) }
   | exp CAST typ { ECast($3, $1) }
   | ID LPAREN RPAREN { ECall(EVar($1), []) }

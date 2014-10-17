@@ -29,25 +29,28 @@ rule token = parse
 | "this" { THIS }
 | "class" { CLASS }
 | "trait" { TRAIT }
-| "=>" { ARROW }
 | "if" { IF }
 | "else" { ELSE }
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
-| '-' { SUB }
-| '+' { ADD }
-| '*' { MUL }
-| '&' { AMP }
+
+| '.' { DOT }
+| ',' { COMMA }
+| ';' { SEMICOLON }
+| ':' { COLON }
+| '=' { ASSIGN }
+
 | '<' { LT }
 | '>' { GT }
 | "<=" { LE }
 | ">=" { GE }
 | "==" { EQ }
 | "!=" { NE }
-| '.' { DOT }
-| ',' { COMMA }
-| ';' { SEMICOLON }
-| ':' { COLON }
-| '=' { ASSIGN }
+
+| '+' { ADD }
+| '-' { SUB }
+| '*' { MUL }
+| '/' { DIV }
+
 | '"' [^ '"']* '"' { STRING(Lexing.lexeme lexbuf) }
 | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '_' '0'-'9']*
     { ID(Lexing.lexeme lexbuf) }

@@ -205,20 +205,38 @@ let rec print_s ?(nest=true) (s:s):unit =
     fprintf !fp ") ";
     print_s s ~nest:false;
 
-  | SIf(e1, e2, SEmpty) ->
-    fprintf !fp "if (";
-    print_e e1 ~paren:false;
-    fprintf !fp ")\n";
-    print_block "\n" e2;
-    fprintf !fp "%s" !sp
-
   | SIf(e1, e2, e3) ->
+
+    let print_block ed = function
+
+      | SBlock ls as e ->
+        fprintf !fp " ";
+        print_s e ~nest:false;
+        if ed = ("\n"^ !sp) then fprintf !fp " ";
+
+      | SIf(_, _, _) as e->
+        fprintf !fp " ";
+        print_s e ~nest:false;
+
+      | e ->
+        block(fun () ->
+          fprintf !fp "\n";
+          print_s e;
+          fprintf !fp "%s" ed
+        )
+    in
     fprintf !fp "if (";
     print_e e1 ~paren:false;
     fprintf !fp ")";
-    print_block ("\n" ^ !sp) e2; 
-    fprintf !fp "else";
-    print_block "" e3
+    begin match e3 with
+      | SEmpty ->
+        print_block "\n" e2;
+        fprintf !fp "%s" !sp
+      | _ ->
+        print_block ("\n" ^ !sp) e2; 
+        fprintf !fp "else";
+        print_block "" e3
+    end
 
   | SClass (id, super, ss) ->
     fprintf !fp "class %s" id;
@@ -236,24 +254,6 @@ let rec print_s ?(nest=true) (s:s):unit =
       print_iter print_s ";\n" ss
     );
     fprintf !fp "\n%s}\n" !sp
-
-and print_block ed = function
-
-  | SBlock ls as e ->
-    fprintf !fp " ";
-    print_s e ~nest:false;
-    if ed = ("\n"^ !sp) then fprintf !fp " ";
-
-  | SIf(_, _, _) as e->
-    fprintf !fp " ";
-    print_s e ~nest:false;
-
-  | e ->
-    block(fun () ->
-      fprintf !fp "\n";
-      print_s e;
-      fprintf !fp "%s" ed
-    )
 
 let print_prog ffp (Prog(ls)) =
   sp := "";

@@ -1,4 +1,3 @@
-
 let trans input output =
 
   let inp = open_in input in
@@ -12,7 +11,8 @@ let trans input output =
 
 let gomaj2java src =
   let len = String.length src in
-  if String.sub src (len - 6) 6 = ".gomaj" then
+  if String.sub src (len - 6) 6 = ".gomaj"
+  then
     String.sub src 0 (len - 6) ^ ".java"
   else
     failwith "filename is bad."
