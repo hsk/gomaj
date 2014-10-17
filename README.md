@@ -23,7 +23,7 @@ Hello class {
 
 #### build & run
 
-    $ ./javac example/hello.gomaj example/Hello.java
+    $ ./gomajc example/hello.gomaj example/Hello.java
     $ javac example/Hello.java
     $ ./java example.Hello
     hello world!
