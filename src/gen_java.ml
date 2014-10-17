@@ -1,19 +1,18 @@
 open Printf
 open Ast
 
-let fp = ref stdout
 let sp = ref ""
 
-let block f =
+let block print_fun =
   let old_indent_space = !sp in
   sp := !sp ^ "  ";
-  f ();
+  print_fun ();
   sp := old_indent_space
 
 module M = Map.Make (String)
 
 let infixs =
-  List.fold_left (fun m (k,v,l) -> M.add k (v,l) m) M.empty
+  List.fold_left (fun m (k,prec,left) -> M.add k (prec,left) m) M.empty
     [
       "=",1, false;
       "==",2, true;
@@ -30,7 +29,7 @@ let infixs =
     ]
 
 let prefixs =
-  List.fold_left (fun m (k,v,ident) -> M.add k (v,ident) m ) M.empty
+  List.fold_left (fun m (k,prec,ident) -> M.add k (prec,ident) m ) M.empty
     [
       "new",8,true;
       "!",8,false;
@@ -38,22 +37,27 @@ let prefixs =
     ]
 
 let postfixs =
-  List.fold_left (fun m (k,v,ident) -> M.add k (v,ident) m ) M.empty
+  List.fold_left (fun m (k,prec,ident) -> M.add k (prec,ident) m ) M.empty
     [
       "++",9,false;
       "--",9,false
     ]
 
-let rec print_ls sep p = function
-  | [] -> ()
-  | [x] -> p x
-  | x :: xs ->
-    p x;
-    fprintf !fp "%s" sep;
-    print_ls sep p xs
+let fp = ref stdout
 
-let rec print_iter p sep = 
-  List.iter (fun a -> p a; fprintf !fp "%s" sep)
+let rec print_ls sep print_fun = function
+  | [] -> ()
+  | [x] -> print_fun x
+  | x :: xs ->
+    print_fun x;
+    fprintf !fp "%s" sep;
+    print_ls sep print_fun xs
+
+let rec print_iter print_fun sep = 
+  List.iter (fun a ->
+    print_fun a;
+    fprintf !fp "%s" sep
+  )
 
 let rec print_t = function
 
