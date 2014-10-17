@@ -1,21 +1,27 @@
 open Format
 open Ast
 
+let rec nest =
+  ref ""
+let rec inc () =
+  nest := !nest ^ "  "
+let rec dec () =
+  nest := String.sub !nest 0 ((String.length !nest) - 2)
+
 let rec print_ls sep p ppf = function
   | [] -> ()
   | [x] -> p ppf x
-  | x::xs ->
+  | x :: xs ->
     fprintf ppf "%a%s%a" p x sep (print_ls sep p) xs
 
 let rec print_t sp ppf = function
 
   | Ty(s) ->
-    fprintf ppf "%s%s" <|_2(
-      sp,
+    fprintf ppf "%s%s"
+      sp
       s
-    )
 
-  | TGen(s,t) ->
+  | TGen(s, t) ->
     begin match s with
       | "Array" -> fprintf ppf "%a[]" (print_t sp) t
       | _ ->
@@ -23,69 +29,66 @@ let rec print_t sp ppf = function
           s
           (print_t sp) t
     end
+
 let rec print_e sp ppf = function
 
   | EEmpty ->
     ()
 
   | EInt i ->
-    fprintf ppf "%s%d" <|_2(
-      sp,
+    fprintf ppf "%s%d"
+      sp
       i
-    )
-    
+
   | EVar i ->
-    fprintf ppf "%s%s" <|_2(
-      sp,
+    fprintf ppf "%s%s"
+      sp
       i
-    )
 
   | EString i ->
-    fprintf ppf "%s%s" <|_2(
-      sp,
+    fprintf ppf "%s%s"
+      sp
       i
-    )
-  | EPre(op,e1) ->
-    fprintf ppf "%s(%s %a)" <|_4(
-      sp,
-      op,
-      print_e "", e1
-    )
-  | EBin(e1,("." as op),e2) ->
-    fprintf ppf "%s%a%s%a" <|_6(
-      sp,
-      print_e "", e1,
-      op,
-      print_e "", e2
-    )
-  | EBin(e1,op,e2) ->
-    fprintf ppf "%s%a %s %a" <|_6(
-      sp,
-      print_e "", e1,
-      op,
-      print_e "", e2
-    )
-  | ECall(e1,es) ->
-    fprintf ppf "%a(%a)" <|_4(
-      print_e sp, e1,
-      print_ls<|_2(", ", print_e ""), es
-    )
 
-  | ECallM(i,e1,es) ->
-    fprintf ppf "%a(%a)"<|_4(
-      print_e sp, e1,
-      print_ls<|_2(", ", print_e ""), es
-    )
-  | EArr(e1,es) ->
-    fprintf ppf "%a[%a]"<|_4(
-      print_e sp, e1,
-      print_ls<|_2(", ", print_e ""), es
-    )
-  | ECast(t,e) ->
-    fprintf ppf "((%a)%a)"<|_4(
-      print_t sp, t,
-      print_e "", e
-    )
+  | EPre(op, e1) ->
+    fprintf ppf "%s(%s %a)"
+      sp
+      op
+      (print_e "") e1
+
+  | EBin(e1, ("." as op), e2) ->
+    fprintf ppf "%s%a%s%a"
+      sp
+      (print_e "") e1
+      op
+      (print_e "") e2
+
+  | EBin(e1, op, e2) ->
+    fprintf ppf "%s%a %s %a"
+      sp
+      (print_e "") e1
+      op
+      (print_e "") e2
+
+  | ECall(e1, es) ->
+    fprintf ppf "%a(%a)"
+      (print_e sp) e1
+      (print_ls ", " (print_e "")) es
+
+  | ECallM(i, e1, es) ->
+    fprintf ppf "%a(%a)"
+      (print_e sp) e1
+      (print_ls ", " (print_e "")) es
+
+  | EArr(e1, es) ->
+    fprintf ppf "%a[%a]"
+      (print_e sp) e1
+      (print_ls ", " (print_e "")) es
+
+  | ECast(t, e) ->
+    fprintf ppf "((%a)%a)"
+      (print_t sp) t
+      (print_e "") e
 
 let print_a ppf = function
   | APublic -> fprintf ppf "public"
@@ -98,12 +101,13 @@ let rec print_s ppf (s:s):unit =
   let rec print sp ppf = function
 
     | SAccess(acs, s) ->
-      fprintf ppf "%s%a%a"
+      fprintf ppf "%s%a %a"
         sp
         (print_ls " " print_a) acs
         (print sp) s
 
     | SEmpty ->
+
       ()
 
     | SExp e ->
@@ -143,7 +147,7 @@ let rec print_s ppf (s:s):unit =
         (print_e "") e
 
     | SCon(id, tis, e) ->
-      let f ppf (t,i) =
+      let f ppf (t, i) =
         fprintf ppf "%a %s"
           (print_t "") t
           i
@@ -169,8 +173,7 @@ let rec print_s ppf (s:s):unit =
         (print_block sp "") e3 
 
     | SFun (t, id, ts, e2) ->
-      fprintf ppf "// sfun@.";
-      let f ppf (t,a) =
+      let f ppf (t, a) =
         fprintf ppf "%a %s"
           (print_t "") t
           a
@@ -185,17 +188,18 @@ let rec print_s ppf (s:s):unit =
       let f ppf ss =
         ss |> List.iter (print sp ppf)
       in
-      fprintf ppf "%sclass %s%s{\n%s\n%a};\n"
+      fprintf ppf "%sclass %s%s{\n%s\n%a}\n"
         sp
         id
         (if super = "" then "" else " extends " ^ super)
         sp
         f ss
+
     | STrait (id, ss) ->
       let f ppf ss =
         ss |> List.iter (fun s -> print sp ppf s; fprintf ppf ";@.")
       in
-      fprintf ppf "%sinterface %s{\n%s\n%a};\n"
+      fprintf ppf "%sinterface %s{\n%s\n%a}\n"
         sp
         id
         sp
@@ -214,5 +218,10 @@ let rec print_s ppf (s:s):unit =
       fprintf ppf "\n%a%s"
         (print (sp^"  ")) e
         ed
+
   in
     print "" ppf s
+
+let print_prog ppf (Prog(ls)) =
+  nest := "";
+  print_ls "\n" print_s ppf ls

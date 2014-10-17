@@ -22,8 +22,8 @@ let exec cmd =
       can_read
   done;
   let code = match Unix.close_process_full (cmd_out, cmd_in, cmd_err) with
-  | Unix.WEXITED(c) -> c
-  | Unix.WSIGNALED(c) ->c
-  | Unix.WSTOPPED(c) -> c in
-
+    | Unix.WEXITED(c)   -> c
+    | Unix.WSIGNALED(c) -> c
+    | Unix.WSTOPPED(c)  -> c
+  in
   (!outs,!errs,string_of_int code)

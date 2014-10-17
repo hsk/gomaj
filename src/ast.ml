@@ -36,6 +36,8 @@ type s =
   | SList of s list
   | SAccess of a list * s
 
+type prog =
+  | Prog of s list
 
 let (|>) a b = b a
 
