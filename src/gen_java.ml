@@ -1,227 +1,212 @@
-open Format
+open Printf
 open Ast
 
-let rec nest =
+let sp =
   ref ""
-let rec inc () =
-  nest := !nest ^ "  "
-let rec dec () =
-  nest := String.sub !nest 0 ((String.length !nest) - 2)
 
-let rec print_ls sep p ppf = function
+let fp = ref stdout
+
+let block f =
+  let back = !sp in
+  sp := !sp ^ "  ";
+  f ();
+  sp := back
+
+let rec print_ls sep p = function
   | [] -> ()
-  | [x] -> p ppf x
+  | [x] -> p x
   | x :: xs ->
-    fprintf ppf "%a%s%a" p x sep (print_ls sep p) xs
+    p x;
+    fprintf !fp "%s" sep;
+    print_ls sep p xs
 
-let rec print_t sp ppf = function
+let rec print_iter p sep = 
+  List.iter (fun a -> p a; fprintf !fp "%s" sep)
 
-  | Ty(s) ->
-    fprintf ppf "%s%s"
-      sp
-      s
+let rec print_t = function
+
+  | Ty(s) -> fprintf !fp "%s" s
 
   | TGen(s, t) ->
     begin match s with
-      | "Array" -> fprintf ppf "%a[]" (print_t sp) t
+      | "Array" ->
+        print_t t;
+        fprintf !fp "[]"
       | _ ->
-        fprintf ppf "%s<%a>"
-          s
-          (print_t sp) t
+        fprintf !fp "%s<" s;
+        print_t t;
+        fprintf !fp ">"
     end
 
-let rec print_e sp ppf = function
+let rec print_e ?(paren=true) = function 
+  | EEmpty -> ()
 
-  | EEmpty ->
-    ()
+  | EInt i -> fprintf !fp "%d" i
 
-  | EInt i ->
-    fprintf ppf "%s%d"
-      sp
-      i
+  | EVar i -> fprintf !fp "%s" i
 
-  | EVar i ->
-    fprintf ppf "%s%s"
-      sp
-      i
-
-  | EString i ->
-    fprintf ppf "%s%s"
-      sp
-      i
+  | EString i -> fprintf !fp "%s" i
 
   | EPre(op, e1) ->
-    fprintf ppf "%s(%s %a)"
-      sp
-      op
-      (print_e "") e1
+    fprintf !fp "%s " op;
+    print_e e1
 
-  | EBin(e1, ("." as op), e2) ->
-    fprintf ppf "%s%a%s%a"
-      sp
-      (print_e "") e1
-      op
-      (print_e "") e2
+  | EBin(e1, ".", e2) ->
+    print_e e1;
+    fprintf !fp ".";
+    print_e e2
 
   | EBin(e1, op, e2) ->
-    fprintf ppf "%s%a %s %a"
-      sp
-      (print_e "") e1
-      op
-      (print_e "") e2
+    if paren then fprintf !fp "(";
+    print_e e1;
+    fprintf !fp "%s" op;
+    print_e e2;
+    if paren then fprintf !fp ")"
 
   | ECall(e1, es) ->
-    fprintf ppf "%a(%a)"
-      (print_e sp) e1
-      (print_ls ", " (print_e "")) es
-
-  | ECallM(i, e1, es) ->
-    fprintf ppf "%a(%a)"
-      (print_e sp) e1
-      (print_ls ", " (print_e "")) es
+    print_e e1;
+    fprintf !fp "(";
+    es |> print_ls ", " (print_e ~paren:false);
+    fprintf !fp ")"
 
   | EArr(e1, es) ->
-    fprintf ppf "%a[%a]"
-      (print_e sp) e1
-      (print_ls ", " (print_e "")) es
+    print_e e1;
+    fprintf !fp "[";
+    es |> print_ls ", " (print_e ~paren:false);
+    fprintf !fp "]";
 
   | ECast(t, e) ->
-    fprintf ppf "((%a)%a)"
-      (print_t sp) t
-      (print_e "") e
+    fprintf !fp "(";
+    print_t t;
+    fprintf !fp ")";
+    print_e e
 
-let print_a ppf = function
-  | APublic -> fprintf ppf "public"
-  | APrivate -> fprintf ppf "private"
-  | AProtected -> fprintf ppf "protected"
-  | AStatic -> fprintf ppf "static"
-  | AFinal -> fprintf ppf "final"
+let print_a = function
+  | APublic -> fprintf !fp "public"
+  | APrivate -> fprintf !fp "private"
+  | AProtected -> fprintf !fp "protected"
+  | AStatic -> fprintf !fp "static"
+  | AFinal -> fprintf !fp "final"
 
-let rec print_s ppf (s:s):unit = 
-  let rec print sp ppf = function
+let rec print_s ?(nest=true) (s:s):unit =
 
-    | SAccess(acs, s) ->
-      fprintf ppf "%s%a %a"
-        sp
-        (print_ls " " print_a) acs
-        (print sp) s
+  if nest then
+    fprintf !fp "%s" !sp;
+  match s with
 
-    | SEmpty ->
+  | SAccess(acs, s) ->
+    acs |> print_iter print_a " ";
+    print_s ~nest:false s
 
-      ()
+  | SEmpty ->
+    ()
 
-    | SExp e ->
-      fprintf ppf "%a;"
-        (print_e sp) e
+  | SExp e ->
+    print_e e ~paren:false;
+    fprintf !fp ";"
 
-    | SRet e ->
-      fprintf ppf "%sreturn %a;"
-        sp
-        (print_e "") e
+  | SRet e ->
+    fprintf !fp "return ";
+    print_e e ~paren:false;
+    fprintf !fp ";"
 
-    | SPackage s ->
-      fprintf ppf "package %s;"
-        s
+  | SPackage s ->
+    fprintf !fp "package %s;" s
 
-    | SList ls ->
-      ls|>List.iter begin fun t ->
-        fprintf ppf "%a@." (print sp) t
-      end
+  | SBlock ss ->
+    fprintf !fp "{\n";
+    (fun()->
+      print_iter print_s "\n" ss
+    )|>block;
+    fprintf !fp "%s}" !sp
 
-    | SBlock ls ->
-      fprintf ppf "{\n%a\n%s}"
-        (print_ls "\n" (print (sp ^ "  "))) ls
-        sp
+  | SLet (t, id, EEmpty) ->
+    print_t t;
+    fprintf !fp " ";
+    print_e id ~paren:false;
+    fprintf !fp ";"
 
-    | SLet (t, id, EEmpty) ->
-      fprintf ppf "%s%a %a;"
-        sp
-        (print_t "") t
-        (print_e "") id
+  | SLet (t, id, e) ->
+    print_t t;
+    fprintf !fp " ";
+    print_e id ~paren:false;
+    fprintf !fp " = ";
+    print_e e;
+    fprintf !fp ";";
 
-    | SLet (t, id, e) ->
-      fprintf ppf "%s%a %a = %a;"
-        sp
-        (print_t "") t
-        (print_e "") id
-        (print_e "") e
+  | SCon(id, tis, e) ->
+    fprintf !fp "%s(" id;
+    tis |> print_ls ", " (fun (t, i) ->
+      print_t t;
+      fprintf !fp " %s" i
+    );
+    fprintf !fp ") ";
+    print_s e ~nest:false
 
-    | SCon(id, tis, e) ->
-      let f ppf (t, i) =
-        fprintf ppf "%a %s"
-          (print_t "") t
-          i
-      in
-      fprintf ppf "%s(%a)%a"
-        id
-        (print_ls ", " f) tis
-        (print ("  "^sp)) e
+  | SFun (t, id, ts, s) ->
+    let f (t, a) =
+      print_t t;
+      fprintf !fp " %s" a
+    in
+    print_t t;
+    fprintf !fp " %s(" id;
+    ts |> print_ls ", " f;
+    fprintf !fp ") ";
+    print_s s ~nest:false;
 
-    | SIf(e1, e2, SEmpty) ->
-      fprintf ppf "%sif (%a)%a%s"
-        sp
-        (print_e "") e1
-        (print_block sp "\n") e2
-        sp
+  | SIf(e1, e2, SEmpty) ->
+    fprintf !fp "if (";
+    print_e e1 ~paren:false;
+    fprintf !fp ")\n";
+    print_block "\n" e2;
+    fprintf !fp "%s" !sp
 
-    | SIf(e1, e2, e3) ->
-      fprintf ppf "%sif (%a)%a%selse%a"
-        sp
-        (print_e "" ) e1
-        (print_block sp "\n") e2 
-        sp
-        (print_block sp "") e3 
+  | SIf(e1, e2, e3) ->
+    fprintf !fp "if (";
+    print_e e1 ~paren:false;
+    fprintf !fp ")";
+    print_block ("\n" ^ !sp) e2; 
+    fprintf !fp "else";
+    print_block "" e3
 
-    | SFun (t, id, ts, e2) ->
-      let f ppf (t, a) =
-        fprintf ppf "%a %s"
-          (print_t "") t
-          a
-      in
-      fprintf ppf "%a %s(%a)%a"
-        (print_t "") t
-        id
-        (print_ls ", " f) ts 
-        (print_block sp "\n") e2
+  | SClass (id, super, ss) ->
+    fprintf !fp "class %s" id;
+    if super <> "" then
+      fprintf !fp " extends %s" super;
+    fprintf !fp " {\n";
+    (fun() ->
+      ss|>print_iter print_s "\n"
+    )|>block;
+    fprintf !fp "%s}" !sp
 
-    | SClass (id, super, ss) ->
-      let f ppf ss =
-        ss |> List.iter (print sp ppf)
-      in
-      fprintf ppf "%sclass %s%s{\n%s\n%a}\n"
-        sp
-        id
-        (if super = "" then "" else " extends " ^ super)
-        sp
-        f ss
+  | STrait (id, ss) ->
+    fprintf !fp "interface %s {\n" id;
+    (fun()->
+      ss |> print_iter print_s ";\n"
+    )|>block;
+    fprintf !fp "\n%s}\n" !sp
 
-    | STrait (id, ss) ->
-      let f ppf ss =
-        ss |> List.iter (fun s -> print sp ppf s; fprintf ppf ";@.")
-      in
-      fprintf ppf "%sinterface %s{\n%s\n%a}\n"
-        sp
-        id
-        sp
-        f ss
+and print_block ed = function
 
-    | _ -> assert false
+  | SBlock ls as e ->
+    fprintf !fp " ";
+    print_s e ~nest:false;
+    if ed = ("\n"^ !sp) then fprintf !fp " ";
 
-  and print_block sp ed ppf = function
+  | SIf(_, _, _) as e->
+    fprintf !fp " ";
+    print_s e ~nest:false;
 
-    | SBlock ls as e ->
-      fprintf ppf " %a%s"
-        (print sp) e
-        (if ed <> "" then " " else "")
+  | e ->
+    (fun () ->
+      fprintf !fp "\n";
+      print_s e;
+      fprintf !fp "%s" ed
+    )|>block
 
-    | e ->
-      fprintf ppf "\n%a%s"
-        (print (sp^"  ")) e
-        ed
+let print_prog ffp (Prog(ls)) =
+  sp := "";
+  fp := ffp;
+  ls |> print_ls "\n" print_s;
+  fp := stdout
 
-  in
-    print "" ppf s
-
-let print_prog ppf (Prog(ls)) =
-  nest := "";
-  print_ls "\n" print_s ppf ls

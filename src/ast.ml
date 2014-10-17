@@ -6,7 +6,6 @@ type e =
   | EBin of e * string * e
   | EPre of string * e
   | ECall of e * e list
-  | ECallM of string * e * e list
   | EArr of e * e list
   | EVar of string
   | EString of string
@@ -32,8 +31,6 @@ type s =
   | SClass of string * string * s list
   | SCon of string * (t * string) list * s
   | STrait of  string * s list
-  | SImpl of string * string * s list
-  | SList of s list
   | SAccess of a list * s
 
 type prog =

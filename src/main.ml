@@ -7,7 +7,7 @@ let trans input output =
   close_in inp;
 
   let out = open_out output in
-  Gen_java.print_prog (Format.formatter_of_out_channel out) ast;
+  Gen_java.print_prog out ast;
   close_out out
 
 let _ =
