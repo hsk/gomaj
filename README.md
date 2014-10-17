@@ -1,6 +1,6 @@
 # GomaJ Programming Language
 
-GomaJ is simple translator to Java language, namely, GomaJ is AltJ.
+GomaJ is AltJ, namely, GomaJ is a translator for the Java programming language.
 
 This compiler made by OCaml, OCamlYacc and OCamlLex.
 
