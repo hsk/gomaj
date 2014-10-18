@@ -218,13 +218,12 @@ trait_def:
     }
 prms:
   | prms_ {
-
     let(_,ls) = List.fold_left (fun (n,ls) m  ->
       match m with
       | (t,"") -> (n+1,(t,("_"^string_of_int n))::ls)
       | (t,id) -> (n+1,(t,id)::ls)
     ) (1, []) $1
-    in ls
+    in List.rev ls
   }
 
 prms_:
