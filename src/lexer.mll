@@ -28,6 +28,8 @@ rule token = parse
 | "final" { FINAL }
 | "this" { THIS }
 | "class" { CLASS }
+| ":>" { EXTENDS }
+| "<:" { REXTENDS }
 | "trait" { TRAIT }
 | "if" { IF }
 | "else" { ELSE }

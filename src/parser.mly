@@ -14,7 +14,7 @@ let addBlock = function
 %token <string> ID
 
 %token STATIC PUBLIC PRIVATE PROTECTED FINAL
-%token CLASS THIS TRAIT
+%token CLASS THIS TRAIT EXTENDS REXTENDS
 %token IF ELSE
 %token RETURN
 %token COLON COMMA SEMICOLON
@@ -148,43 +148,50 @@ def:
     }
   | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
   | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
-  | ID CLASS LBRACE RBRACE { SClass($1, "", []) }
-  | ID CLASS LBRACE defs RBRACE { SClass($1, "", $4) }
-  | ID CLASS LPAREN RPAREN {
-      SClass($1, "",[SCon($1, [],SBlock [])])
-    }
-
-  | ID CLASS LPAREN prms RPAREN {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass($1, "Object", SCon($1, $4,SBlock inits)::mems)
-    }
-
-  | ID CLASS LPAREN prms RPAREN LBRACE RBRACE {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass($1, "Object", SCon($1, $4, SBlock inits)::mems)
-    }
-
-  | ID CLASS LPAREN prms RPAREN LBRACE defs RBRACE {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass($1, "Object", SCon($1, $4, SBlock inits)::mems @ $7)
-    }
-
+  | class_ { $1 }
   | ID TRAIT LBRACE trait_defs RBRACE { STrait($1, $4) }
+
+extends:
+  | ID { ($1, "") }
+  | ID EXTENDS  ID { ($3, $1) }
+  | ID REXTENDS ID { ($1, $3) }
+class_:
+  | extends CLASS LBRACE RBRACE { SClass(fst $1, snd $1, []) }
+  | extends CLASS LBRACE defs RBRACE { SClass(fst $1, snd $1, $4) }
+  | extends CLASS LPAREN RPAREN {
+      SClass(fst $1, snd $1,[SCon(fst $1, [],SBlock [])])
+    }
+
+  | extends CLASS LPAREN prms RPAREN {
+      let mems = List.map begin fun (ty, id) ->
+        SLet(ty, EVar id, EEmpty)
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      end $4 in
+      SClass(fst $1, snd $1, SCon(fst $1, $4,SBlock inits)::mems)
+    }
+
+  | extends CLASS LPAREN prms RPAREN LBRACE RBRACE {
+      let mems = List.map begin fun (ty, id) ->
+        SLet(ty, EVar id, EEmpty)
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      end $4 in
+      SClass(fst $1, snd $1, SCon(fst $1, $4, SBlock inits)::mems)
+    }
+
+  | extends CLASS LPAREN prms RPAREN LBRACE defs RBRACE {
+      let mems = List.map begin fun (ty, id) ->
+        SLet(ty, EVar id, EEmpty)
+      end $4 in
+      let inits = List.map begin fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      end $4 in
+      SClass(fst $1, snd $1, SCon(fst $1, $4, SBlock inits)::mems @ $7)
+    }
+
 
 trait_defs:
   | trait_def { [$1] }

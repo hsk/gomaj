@@ -18,10 +18,10 @@ Test class {
     System.out.println("-(1+2*3)="+ -(1+2*3))
     System.out.println("(-1+2*3)="+ (-1+2*3))
   }
-
 }
 
 Point class(x:int, y:int)
 Point3D class(x:int, y:int, z:int)
-Int class(int)
-Add class(String,int,int)
+E class()
+E :> Int class(int)
+E :> Add class(int,int)
