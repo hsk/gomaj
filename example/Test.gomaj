@@ -22,13 +22,13 @@ Test class {
     System.out.println("eq="+new Test().eval(new Add(new Int(1),new Int(2))))
   }
 
-	eval(e:E):int = {
-	  e match {
-	  case Int => return $._1
-	  case Add => return eval($._1) + eval($._2)
-	  }
-	  return 0
-	}
+  eval(e:E):int = {
+    e match {
+    case Int => return $._1
+    case Add => return eval($._1) + eval($._2)
+    }
+    return 0
+  }
 }
 
 Point class(x:int, y:int)
