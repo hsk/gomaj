@@ -14,33 +14,33 @@ module M = Map.Make (String)
 let infixs =
   List.fold_left (fun m (k,prec,left) -> M.add k (prec,left) m) M.empty
     [
-      "=",1, false;
-      "==",2, true;
-      "!=",2, true;
-      "<",3, true;
-      ">",3, true;
-      "<=",4, true;
-      ">=",5, true;
-      "+",6, true;
-      "-",6, true;
+      "=",  1, false;
+      "==", 2, true;
+      "!=", 2, true;
+      "<",  3, true;
+      ">",  3, true;
+      "<=", 4, true;
+      ">=", 5, true;
+      "+",  6, true;
+      "-",  6, true;
 
-      "/",7, true;
-      "*",7, true
+      "/",  7, true;
+      "*",  7, true
     ]
 
 let prefixs =
   List.fold_left (fun m (k,prec,ident) -> M.add k (prec,ident) m ) M.empty
     [
-      "new",8,true;
-      "!",8,false;
-      "-",8,false
+      "new", 8, true;
+      "!",   8, false;
+      "-",   8, false
     ]
 
 let postfixs =
   List.fold_left (fun m (k,prec,ident) -> M.add k (prec,ident) m ) M.empty
     [
-      "++",9,false;
-      "--",9,false
+      "++", 9, false;
+      "--", 9, false
     ]
 
 let fp = ref stdout
@@ -89,7 +89,8 @@ let rec print_e ?(paren=true) ?(p=0) = function
     let paren = paren && p1 < p in
 
     if paren then fprintf !fp "(";
-    if ident then fprintf !fp " %s " op else fprintf !fp " %s" op;
+    if ident then fprintf !fp " %s " op
+             else fprintf !fp " %s"  op;
     print_e e1 ~p:p1;
     if paren then fprintf !fp ")"
 
@@ -100,7 +101,7 @@ let rec print_e ?(paren=true) ?(p=0) = function
 
     if paren then fprintf !fp "(";
     if ident then fprintf !fp " %s " op
-             else fprintf !fp " %s" op;
+             else fprintf !fp " %s"  op;
     print_e e1 ~p:(p1-1);
     if paren then fprintf !fp ")"
 
@@ -113,7 +114,7 @@ let rec print_e ?(paren=true) ?(p=0) = function
     let (p1,l) = (M.find op infixs) in
     let paren = paren && (if l then p1 <= p else p1 < p) in
     if paren then fprintf !fp "(";
-    print_e e1 ~p:(if l then (p1-1) else (p1+1));
+    print_e e1 ~p:(if l then p1 - 1 else p1 + 1);
     fprintf !fp "%s" op;
     print_e e2 ~p:p1;
     if paren then fprintf !fp ")"
@@ -137,11 +138,11 @@ let rec print_e ?(paren=true) ?(p=0) = function
     print_e e
 
 let print_a = function
-  | APublic -> fprintf !fp "public"
-  | APrivate -> fprintf !fp "private"
+  | APublic    -> fprintf !fp "public"
+  | APrivate   -> fprintf !fp "private"
   | AProtected -> fprintf !fp "protected"
-  | AStatic -> fprintf !fp "static"
-  | AFinal -> fprintf !fp "final"
+  | AStatic    -> fprintf !fp "static"
+  | AFinal     -> fprintf !fp "final"
 
 let rec print_s ?(nest=true) (s:s):unit =
 
@@ -170,9 +171,9 @@ let rec print_s ?(nest=true) (s:s):unit =
 
   | SBlock ss ->
     fprintf !fp "{\n";
-    block (fun()->
+    block begin fun()->
       print_iter print_s "\n" ss
-    );
+    end;
     fprintf !fp "%s}" !sp
 
   | SLet (t, id, EEmpty) ->
@@ -191,10 +192,10 @@ let rec print_s ?(nest=true) (s:s):unit =
 
   | SCon(id, tis, e) ->
     fprintf !fp "%s(" id;
-    print_ls ", " (fun (t, i) ->
+    print_ls ", " begin fun (t, i) ->
       print_t t;
       fprintf !fp " %s" i
-    ) tis;
+    end tis;
     fprintf !fp ") ";
     print_s e ~nest:false
 
@@ -223,11 +224,11 @@ let rec print_s ?(nest=true) (s:s):unit =
         print_s e ~nest:false;
 
       | e ->
-        block(fun () ->
+        block begin fun () ->
           fprintf !fp "\n";
           print_s e;
           fprintf !fp "%s" ed
-        )
+        end
     in
     fprintf !fp "if (";
     print_e e1 ~paren:false;
@@ -247,16 +248,16 @@ let rec print_s ?(nest=true) (s:s):unit =
     if super <> "" then
       fprintf !fp " extends %s" super;
     fprintf !fp " {\n";
-    block (fun() ->
+    block begin fun() ->
       print_iter print_s "\n" ss
-    );
+    end;
     fprintf !fp "%s}" !sp
 
   | STrait (id, ss) ->
     fprintf !fp "interface %s {\n" id;
-    block (fun()->
+    block begin fun()->
       print_iter print_s ";\n" ss
-    );
+    end;
     fprintf !fp "\n%s}\n" !sp
 
 let print_prog ffp (Prog(ls)) =

@@ -197,7 +197,20 @@ trait_def:
   | ID LPAREN prms RPAREN COLON ID {
       SFun(Ty $6, $1, $3, SEmpty)
     }
-
 prms:
+  | prms_ {
+
+    let(_,ls) = List.fold_left (fun (n,ls) m  ->
+      match m with
+      | (t,"") -> (n+1,(t,("_"^string_of_int n))::ls)
+      | (t,id) -> (n+1,(t,id)::ls)
+    ) (1, []) $1
+    in ls
+  }
+
+prms_:
   | ID COLON typ { [$3, $1] }
-  | ID COLON typ COMMA prms { ($3, $1)::$5 }
+  | ID COLON typ COMMA prms_ { ($3, $1)::$5 }
+  | typ { [$1,""] }
+  | typ COMMA prms_ { ($1,"")::$3 }
+

@@ -1,25 +1,27 @@
 package example
 
 Test class {
-	
-	a:int
-	b:int = 1
-	c():int = return 1
+  
+  a:int
+  b:int = 1
+  c():int = return 1
 
-	static public main(argv:Array[String]):void = {
+  static public main(argv:Array[String]):void = {
 
-		System.out.println("c()="+new Test().c())
-	    a:int=0
-	    b:int=0
-	    System.out.println("1+2+3="+(a=b=1+2+3))
-	    System.out.println("1+2+3="+(a=(b=1)+2+3))
-	    System.out.println("1*2+3="+(1*2+3))
-	    System.out.println("(1+2)*3="+((1+2)*3))
-	    System.out.println("-(1+2*3)="+ -(1+2*3))
-	    System.out.println("(-1+2*3)="+ (-1+2*3))
-	}
+    System.out.println("c()="+new Test().c())
+    a:int=0
+    b:int=0
+    System.out.println("1+2+3="+(a=b=1+2+3))
+    System.out.println("1+2+3="+(a=(b=1)+2+3))
+    System.out.println("1*2+3="+(1*2+3))
+    System.out.println("(1+2)*3="+((1+2)*3))
+    System.out.println("-(1+2*3)="+ -(1+2*3))
+    System.out.println("(-1+2*3)="+ (-1+2*3))
+  }
 
 }
 
 Point class(x:int, y:int)
 Point3D class(x:int, y:int, z:int)
+Int class(int)
+Add class(String,int,int)
