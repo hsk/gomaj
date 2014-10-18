@@ -13,7 +13,6 @@ type e =
   | EString of string
   | EEmpty
   | ECast of t * e
-
 type a =
   | APublic
   | AProtected
@@ -34,6 +33,7 @@ type s =
   | SCon of string * (t * string) list * s
   | STrait of  string * s list
   | SAccess of a list * s
+  | SMatch of e * (string * s list) list
 
 type prog =
   | Prog of s list

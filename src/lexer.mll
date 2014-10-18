@@ -30,6 +30,9 @@ rule token = parse
 | "class" { CLASS }
 | ":>" { EXTENDS }
 | "<:" { REXTENDS }
+| "match" { MATCH }
+| "case" { CASE }
+| "=>" { ARROW }
 | "trait" { TRAIT }
 | "if" { IF }
 | "else" { ELSE }
@@ -54,7 +57,7 @@ rule token = parse
 | '/' { DIV }
 
 | '"' [^ '"']* '"' { STRING(Lexing.lexeme lexbuf) }
-| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '_' '0'-'9']*
+| ['a'-'z' 'A'-'Z' '_' '$' ]['a'-'z' 'A'-'Z' '_' '$' '0'-'9']*
     { ID(Lexing.lexeme lexbuf) }
 | eof { EOF }
 | _

@@ -260,6 +260,21 @@ let rec print_s ?(nest=true) (s:s):unit =
     end;
     fprintf !fp "\n%s}\n" !sp
 
+  | SMatch (exp, ss) ->
+    List.iter (fun (id, ss) ->
+      fprintf !fp "\n%sif (" !sp;
+      print_e exp;
+      fprintf !fp " instanceof %s) {\n" id;
+      block begin fun() ->
+        fprintf !fp "%s%s $ = (%s)" !sp id id;
+        print_e exp;
+        fprintf !fp ";\n";
+        print_iter print_s "\n" ss;
+      end;
+      fprintf !fp "%s}\n" !sp;
+
+    ) ss
+
 let print_prog ffp (Prog(ls)) =
   sp := "";
   fp := ffp;

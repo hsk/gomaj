@@ -16,6 +16,7 @@ let addBlock = function
 %token STATIC PUBLIC PRIVATE PROTECTED FINAL
 %token CLASS THIS TRAIT EXTENDS REXTENDS
 %token IF ELSE
+%token MATCH CASE ARROW
 %token RETURN
 %token COLON COMMA SEMICOLON
 
@@ -101,6 +102,16 @@ exp:
   | ID LPAREN exps RPAREN { ECall(EVar($1), $3) }
   | ID LPAREN exps COMMA RPAREN { ECall(EVar($1), $3) }
 
+ids:
+  | ID { [$1] }
+  | ID COMMA ids { $1::$3 }
+
+cases:
+  | case { [$1] }
+  | case cases { $1::$2 }
+case:
+  | CASE ID ARROW stmts { ($2, $4) }
+
 stmts:
   | stmt { [$1] }
   | stmt stmts { $1 :: $2 }
@@ -115,6 +126,7 @@ stmt:
   | IF LPAREN exp RPAREN stmt ELSE stmt { SIf($3, $5, $7) }
   | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
   | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
+  | exp MATCH LBRACE cases RBRACE { SMatch($1, $4) }
 
 defs:
   | adef { [$1] }

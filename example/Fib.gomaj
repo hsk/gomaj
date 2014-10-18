@@ -16,9 +16,6 @@ Fib class {
   }
 }
 
-Point class(x:int, y:int)
-Point3D class(x:int, y:int)
-
 Int class (x:int) {
   fib():int =
     if (@x == 0) {
