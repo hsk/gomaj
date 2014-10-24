@@ -2,13 +2,13 @@ all:
 	cd src; ocamlyacc parser.mly
 	rm src\parser.mli
 	cd src; ocamllex lexer.mll
-	cd src; ocamlc ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ..\gomajc
+	cd src; ocamlopt ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ../gomajc.exe
 
 opt:
 	cd src; ocamlyacc parser.mly
 	rm src\parser.mli
 	cd src; ocamllex lexer.mll
-	cd src; ocamlopt ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ..\gomajc
+	cd src; ocamlopt ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ../gomajc.exe
 
 hello:
 	.\gomajc example\Hello.gomaj
