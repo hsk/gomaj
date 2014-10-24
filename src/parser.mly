@@ -21,7 +21,7 @@ let addBlock = function
 %token COLON COMMA SEMICOLON
 
 %token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
-%token HAT SHARP
+%token HAT SHARP HART
 %token ASSIGN
 %token CAST
 %token EQ NE
@@ -135,6 +135,7 @@ defs:
 
 access:
   | HAT { AStatic }
+  | HART { AStatic }
   | ADD { APublic }
   | SUB { APrivate }
   | SHARP { AProtected }

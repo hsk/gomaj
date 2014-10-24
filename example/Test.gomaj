@@ -6,7 +6,7 @@ package example
   - b:int = 1;
   - c():int = return 1;
 
-  + ^ main(argv:Array[String]):void = {
+  + ♡ main(argv:Array[String]):void = {
 
     System.out.println("c()="+new Test().c())
     a:int=0
@@ -30,11 +30,10 @@ package example
     return 0
   }
 
-  ^ Point class(x:int, y:int);
-  ^ Point3D class(x:int, y:int, z:int);
-  ^ E class();
-  ^ E :> Int class(int);
-  ^ E :> Add class(E,E);
+  ♡ Point class(x:int, y:int);
+  ♡ Point3D class(x:int, y:int, z:int);
+  ♡ E class();
+  ♡ E :> Int class(int);
+  ♡ E :> Add class(E,E);
 
 }
-

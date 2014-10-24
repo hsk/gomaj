@@ -39,6 +39,7 @@ rule token = parse
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 
 | '^' { HAT }
+| "♡" { HART }
 | '.' { DOT }
 | ',' { COMMA }
 | ';' { SEMICOLON }
