@@ -4,9 +4,9 @@ Test class {
   
   a:int
   b:int = 1
-  c():int = return 1
+  c():int = return 1;
 
-  static public main(argv:Array[String]):void = {
+  + ^ main(argv:Array[String]):void = {
 
     System.out.println("c()="+new Test().c())
     a:int=0

@@ -15,11 +15,14 @@ This compiler made by OCaml, OCamlYacc and OCamlLex.
 ```
 package example
 Hello class {
-  public static main():void = {
+  + ^ main():void = {
     System.out.println("hello world")
   }
 }
 ```
+
++ is public
+^ is static
 
 #### build & run
 

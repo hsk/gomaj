@@ -38,6 +38,7 @@ rule token = parse
 | "else" { ELSE }
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 
+| '^' { HAT }
 | '.' { DOT }
 | ',' { COMMA }
 | ';' { SEMICOLON }

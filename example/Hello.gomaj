@@ -1,5 +1,5 @@
 package example
 Hello class {
-	public static main(argv:Array[String]):void =
+	+ ^ main(argv:Array[String]):void =
 		System.out.println("hello world")
 }

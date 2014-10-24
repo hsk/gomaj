@@ -21,7 +21,7 @@ let addBlock = function
 %token COLON COMMA SEMICOLON
 
 %token LPAREN RPAREN LBRACE RBRACE LBRACK RBRACK
-
+%token HAT
 %token ASSIGN
 %token CAST
 %token EQ NE
@@ -131,11 +131,12 @@ stmt:
 defs:
   | adef { [$1] }
   | adef defs { $1 :: $2 }
+  | adef defs { $1 :: $2 }
 
 access:
-  | STATIC { AStatic }
-  | PUBLIC { APublic }
-  | PRIVATE { APrivate }
+  | HAT { AStatic }
+  | ADD { APublic }
+  | SUB { APrivate }
   | PROTECTED { AProtected }
   | FINAL { AFinal }
 
@@ -146,7 +147,7 @@ accesses:
 adef:
   | accesses def { SAccess($1, $2) }
   | def { $1 }
-
+  | adef SEMICOLON { $1 }
 def:
   | PACKAGE { SPackage($1) }
 
