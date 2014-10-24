@@ -21,8 +21,7 @@ Hello class {
 }
 ```
 
-\+ is public
-\^ is static
+`\+` is public and `\^` is static
 
 #### build & run
 
