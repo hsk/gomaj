@@ -1,8 +1,8 @@
 package example;
 class Test {
-  int a;
-  int b = 1;
-  int c() {
+  private int a;
+  private int b = 1;
+  private int c() {
     return 1;
   }
   public static void main(String[] argv) {
@@ -18,7 +18,7 @@ class Test {
     System.out.println("eq="+ new Test().eval( new Int(1)));
     System.out.println("eq="+ new Test().eval( new Add( new Int(1),  new Int(2))));
   }
-  int eval(E e) {
+  private int eval(E e) {
     
     if (e instanceof Int) {
       Int $ = (Int)e;

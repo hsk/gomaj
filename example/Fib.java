@@ -8,7 +8,7 @@ class Fib {
     else
       return fib(a-2)+fib(a-1);
   }
-  public static void main(String[] argv) {
+  static public void main(String[] argv) {
     System.out.println("fib 10 = "+fib(10));
     System.out.println("Int.fib 10 = "+ new Int(10).fib());
   }
@@ -18,7 +18,7 @@ class Int {
     this.x=x;
   }
   int x;
-  int fib() {
+  public int fib() {
     if (this.x==0) {
       return 0;
     } else if (this.x==1)

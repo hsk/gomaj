@@ -2,9 +2,9 @@ package example
 
 Test class {
   
-  a:int
-  b:int = 1
-  c():int = return 1;
+  - a:int;
+  - b:int = 1;
+  - c():int = return 1;
 
   + ^ main(argv:Array[String]):void = {
 
@@ -22,7 +22,7 @@ Test class {
     System.out.println("eq="+new Test().eval(new Add(new Int(1),new Int(2))))
   }
 
-  eval(e:E):int = {
+  - eval(e:E):int = {
     e match {
     case Int => return $._1
     case Add => return eval($._1) + eval($._2)
