@@ -1,6 +1,6 @@
 package example
 
-Fib class {
++ Fib class {
 
   ^ fib(a:int):int = 
     if (a == 0)
@@ -14,15 +14,16 @@ Fib class {
     System.out.println("fib 10 = " + fib(10))
     System.out.println("Int.fib 10 = " + new Int(10).fib())
   }
-}
 
-Int class (x:int) {
-  + fib():int =
-    if (@x == 0) {
-      return 0
-    } else if (@x == 1)
-      return 1
-    else
-      return new Int(@x - 1).fib()
-           + new Int(@x - 2).fib()
+  ^ Int class (x:int) {
+    + fib():int =
+      if (@x == 0) {
+        return 0
+      } else if (@x == 1)
+        return 1
+      else
+        return new Int(@x - 1).fib()
+             + new Int(@x - 2).fib()
+  }
+
 }

@@ -56,6 +56,7 @@ rule token = parse
 | '-' { SUB }
 | '*' { MUL }
 | '/' { DIV }
+| '#' { SHARP }
 
 | '"' [^ '"']* '"' { STRING(Lexing.lexeme lexbuf) }
 | ['a'-'z' 'A'-'Z' '_' '$' ]['a'-'z' 'A'-'Z' '_' '$' '0'-'9']*

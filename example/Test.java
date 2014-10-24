@@ -1,5 +1,5 @@
 package example;
-class Test {
+public class Test {
   private int a;
   private int b = 1;
   private int c() {
@@ -32,40 +32,40 @@ class Test {
 
     return 0;
   }
-}
-class Point {
-  Point(int x, int y) {
-    this.x=x;
-    this.y=y;
+  static class Point {
+    Point(int x, int y) {
+      this.x=x;
+      this.y=y;
+    }
+    int x;
+    int y;
   }
-  int x;
-  int y;
-}
-class Point3D {
-  Point3D(int x, int y, int z) {
-    this.x=x;
-    this.y=y;
-    this.z=z;
+  static class Point3D {
+    Point3D(int x, int y, int z) {
+      this.x=x;
+      this.y=y;
+      this.z=z;
+    }
+    int x;
+    int y;
+    int z;
   }
-  int x;
-  int y;
-  int z;
-}
-class E {
-  E() {
+  static class E {
+    E() {
+    }
   }
-}
-class Int extends E {
-  Int(int _1) {
-    this._1=_1;
+  static class Int extends E {
+    Int(int _1) {
+      this._1=_1;
+    }
+    int _1;
   }
-  int _1;
-}
-class Add extends E {
-  Add(E _1, E _2) {
-    this._1=_1;
-    this._2=_2;
+  static class Add extends E {
+    Add(E _1, E _2) {
+      this._1=_1;
+      this._2=_2;
+    }
+    E _1;
+    E _2;
   }
-  E _1;
-  E _2;
 }

@@ -1,6 +1,6 @@
 package example
 
-Test class {
++ Test class {
   
   - a:int;
   - b:int = 1;
@@ -29,10 +29,12 @@ Test class {
     }
     return 0
   }
+
+  ^ Point class(x:int, y:int);
+  ^ Point3D class(x:int, y:int, z:int);
+  ^ E class();
+  ^ E :> Int class(int);
+  ^ E :> Add class(E,E);
+
 }
 
-Point class(x:int, y:int)
-Point3D class(x:int, y:int, z:int)
-E class()
-E :> Int class(int)
-E :> Add class(E,E)
