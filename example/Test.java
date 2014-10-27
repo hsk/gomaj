@@ -27,7 +27,9 @@ public class Test {
 
     if (e instanceof Add) {
       Add $ = (Add)e;
-      return eval($._1)+eval($._2);
+      int a = eval($._1);
+      int b = eval($._2);
+      return a+b;
     }
 
     return 0;

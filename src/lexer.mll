@@ -31,7 +31,7 @@ rule token = parse
 | ":>" { EXTENDS }
 | "<:" { REXTENDS }
 | "match" { MATCH }
-| "case" { CASE }
+| '|' { OR }
 | "=>" { ARROW }
 | "trait" { TRAIT }
 | "if" { IF }

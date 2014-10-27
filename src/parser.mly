@@ -16,7 +16,7 @@ let addBlock = function
 %token STATIC PUBLIC PRIVATE PROTECTED FINAL
 %token CLASS THIS TRAIT EXTENDS REXTENDS
 %token IF ELSE
-%token MATCH CASE ARROW
+%token MATCH OR ARROW
 %token RETURN
 %token COLON COMMA SEMICOLON
 
@@ -73,30 +73,34 @@ exps:
   | exp { [$1] }
   | exp COMMA exps { $1 :: $3 }
 
+exp2:
+  | exp { $1 }
+  | SEMICOLON exp { $2 }
+
 exp:
   | simple_exp { $1 }
-  | exp ASSIGN exp { EBin($1, "=", $3) }
+  | exp ASSIGN exp2 { EBin($1, "=", $3) }
 
-  | exp EQ exp { EBin($1, "==", $3) }
-  | exp NE exp { EBin($1, "!=", $3) }
+  | exp EQ exp2 { EBin($1, "==", $3) }
+  | exp NE exp2 { EBin($1, "!=", $3) }
 
-  | exp LT exp { EBin($1, "<", $3) }
-  | exp GT exp { EBin($1, ">", $3) }
-  | exp LE exp { EBin($1, "<=", $3) }
-  | exp GE exp { EBin($1, ">=", $3) }
+  | exp LT exp2 { EBin($1, "<", $3) }
+  | exp GT exp2 { EBin($1, ">", $3) }
+  | exp LE exp2 { EBin($1, "<=", $3) }
+  | exp GE exp2 { EBin($1, ">=", $3) }
 
-  | exp ADD exp { EBin($1, "+", $3) }
-  | exp SUB exp { EBin($1, "-", $3) }
+  | exp ADD exp2 { EBin($1, "+", $3) }
+  | exp SUB exp2 { EBin($1, "-", $3) }
 
-  | exp MUL exp { EBin($1, "*", $3) }
-  | exp DIV exp { EBin($1, "/", $3) }
+  | exp MUL exp2 { EBin($1, "*", $3) }
+  | exp DIV exp2 { EBin($1, "/", $3) }
 
-  | exp DOT exp { EBin($1, ".", $3) }
+  | exp DOT exp2 { EBin($1, ".", $3) }
 
-  | NEW exp { EPre("new", $2) }
-  | SUB exp %prec NEW { EPre("-", $2)}
+  | NEW exp2 { EPre("new", $2) }
+  | SUB exp2 %prec NEW { EPre("-", $2)}
 
-  | AT exp { EBin(EVar("this"), ".", $2) }
+  | AT exp2 { EBin(EVar("this"), ".", $2) }
   | exp CAST typ { ECast($3, $1) }
   | ID LPAREN RPAREN { ECall(EVar($1), []) }
   | ID LPAREN exps RPAREN { ECall(EVar($1), $3) }
@@ -110,7 +114,7 @@ cases:
   | case { [$1] }
   | case cases { $1::$2 }
 case:
-  | CASE ID ARROW stmts { ($2, $4) }
+  | OR ID ARROW stmts { ($2, $4) }
 
 stmts:
   | stmt { [$1] }
