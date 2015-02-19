@@ -1,8 +1,10 @@
-all:
+all: gomajc test
+
+gomajc: src/parser.mly src/lexer.mll src/ast.ml src/gen_java.ml src/main.ml
 	cd src; ocamlyacc parser.mly
 	rm src/parser.mli
 	cd src; ocamllex lexer.mll
-	cd src; ocamlc ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ../gomajc
+	cd src; ocamlfind ocamlc -package ppx_deriving.show ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ../gomajc
 
 opt:
 	cd src; ocamlyacc parser.mly
@@ -20,7 +22,7 @@ fib:
 	javac example/Fib.java
 	java example.Fib
 
-test: example/Test.gomaj
+test: example/Test.gomaj gomajc
 	./gomajc example/Test.gomaj
 	javac example/Test.java
 	java example.Test

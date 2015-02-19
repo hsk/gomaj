@@ -4,7 +4,7 @@ let trans input output =
   let lexbuf = Lexing.from_channel inp in
   let ast = Parser.prog Lexer.token lexbuf in
   close_in inp;
-
+  Format.printf "%a\n" Ast.pp_prog ast;
   let out = open_out output in
   Gen_java.print_prog out ast;
   close_out out

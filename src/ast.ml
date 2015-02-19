@@ -1,6 +1,7 @@
 type t =
   | Ty of string
   | TGen of string * t
+[@@deriving show]
 
 type e =
   | EInt of int
@@ -13,12 +14,15 @@ type e =
   | EString of string
   | EEmpty
   | ECast of t * e
+[@@deriving show]
+
 type a =
   | APublic
   | AProtected
   | APrivate
   | AStatic
   | AFinal
+[@@deriving show]
 
 type s = 
   | SBlock of s list
@@ -34,6 +38,8 @@ type s =
   | STrait of  string * s list
   | SAccess of a list * s
   | SMatch of e * (string * s list) list
+[@@deriving show]
 
 type prog =
   | Prog of s list
+[@@deriving show]

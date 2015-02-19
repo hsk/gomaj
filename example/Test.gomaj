@@ -11,9 +11,9 @@ package example
     System.out.println("c()="+new Test().c())
     a:int=0
     b:int=0
-    System.out.println("1+2+3="+(a=b=1+2+3))
-    System.out.println("1+2+3="+(a=(b=1)+2+3))
-    System.out.println("1*2+3="+(1*2+3))
+    System.out.println("a=b=1+2+3="+(a=b=1+2+3))
+    System.out.println("a=(b=1)+2+3="+(a=(b=1)+2+3))
+    System.out.println("5*2+3="+(5*2+3))
     System.out.println("(1+2)*3="+((1+2)*3))
     System.out.println("-(1+2*3)="+ -(1+2*3))
     System.out.println("(-1+2*3)="+ (-1+2*3))
