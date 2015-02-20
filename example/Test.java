@@ -6,17 +6,17 @@ public class Test {
     return 1;
   }
   public static void main(String[] argv) {
-    System.out.println("c()="+ new Test().c());
+    System.out.println("c()="+new Test().c());
     int a = 0;
     int b = 0;
     System.out.println("a=b=1+2+3="+(a=b=1+2+3));
     System.out.println("a=(b=1)+2+3="+(a=(b=1)+2+3));
     System.out.println("5*2+3="+(5*2+3));
     System.out.println("(1+2)*3="+(1+2)*3);
-    System.out.println("-(1+2*3)="+ -(1+2*3));
-    System.out.println("(-1+2*3)="+ -(1+2*3));
-    System.out.println("eq="+ new Test().eval( new Int(1)));
-    System.out.println("eq="+ new Test().eval( new Add( new Int(1),  new Int(2))));
+    System.out.println("-(1+2*3)="+-(1+2*3));
+    System.out.println("(-1+2*3)="+-(1+2*3));
+    System.out.println("eq="+new Test().eval(new Int(1)));
+    System.out.println("eq="+new Test().eval(new Add(new Int(1), new Int(2))));
   }
   private int eval(E e) {
     

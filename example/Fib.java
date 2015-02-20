@@ -10,7 +10,7 @@ public class Fib {
   }
   static public void main(String[] argv) {
     System.out.println("fib 10 = "+fib(10));
-    System.out.println("Int.fib 10 = "+ new Int(10).fib());
+    System.out.println("Int.fib 10 = "+new Int(10).fib());
   }
   static class Int {
     Int(int x) {
@@ -23,7 +23,7 @@ public class Fib {
       } else if (this.x==1)
         return 1;
       else
-        return  new Int(this.x-1).fib()+ new Int(this.x-2).fib();
+        return new Int(this.x-1).fib()+new Int(this.x-2).fib();
     }
   }
 }

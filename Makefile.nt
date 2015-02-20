@@ -1,4 +1,6 @@
-all:
+all: gomajc opt test fib hello
+
+gomajc:
 	cd src; ocamlyacc parser.mly
 	rm src\parser.mli
 	cd src; ocamllex lexer.mll

@@ -43,6 +43,34 @@ let postfixs =
       "--", 9, false
     ]
 
+
+let order_of_bin op p =
+  let (opp, l) = M.find op infixs in
+  let (lparen, rparen) = if p > opp then ("(",")") else ("","") in
+  let (p1, p2) = if l then (opp, opp + 1) else (opp + 1, opp) in
+  (lparen, rparen, p1, p2)
+
+let rec order_of_pre op p e =
+  let (opp,ident) = M.find op prefixs in
+  let (lparen, rparen) = if p > opp then ("(",")") else ("","") in
+  let space = ident || start_op opp e in
+  (lparen, rparen, opp, if space then " " else "")
+and start_op p = function
+  | ECall(t, _) -> start_op p t
+  | EArr(t, _) -> start_op p t
+  | EPre(op, _) -> not (snd (M.find op prefixs))
+  | EPost(t,op) -> let (lparen,_,_,_) = order_of_post op p t in lparen = "("
+  | _ -> false
+and order_of_post op p e =
+  let (opp, ident) = (M.find op postfixs) in
+  let (lparen, rparen) = if p > opp then ("(",")") else ("","") in
+  let space = ident || end_op opp e in
+  (lparen, rparen, opp, if space then " " else "")
+and end_op p = function
+  | ECast(_, t) -> end_op p t
+  | EPre(op, t) -> let (lparen,_,_,_) = order_of_pre op p t in lparen <> "("
+  | EPost(t,op) -> not (snd (M.find op postfixs))
+  | _ -> false
 let fp = ref stdout
 
 let rec print_ls sep print_fun = function
@@ -74,7 +102,7 @@ let rec print_t = function
         fprintf !fp ">"
     end
 
-let rec print_e ?(paren=true) ?(p=0) = function 
+let rec print_e ?(p=0) = function 
   | EEmpty -> ()
 
   | EInt i -> fprintf !fp "%d" i
@@ -84,26 +112,16 @@ let rec print_e ?(paren=true) ?(p=0) = function
   | EString i -> fprintf !fp "%s" i
 
   | EPre(op, e1) ->
-
-    let (p1,ident) = (M.find op prefixs) in
-    let paren = paren && p1 < p in
-
-    if paren then fprintf !fp "(";
-    if ident then fprintf !fp " %s " op
-             else fprintf !fp " %s"  op;
+    let (lparen, rparen, p1, space) = order_of_pre op p e1 in
+    fprintf !fp "%s%s%s" lparen op space;
     print_e e1 ~p:p1;
-    if paren then fprintf !fp ")"
+    fprintf !fp "%s" rparen;
 
   | EPost(e1, op) ->
-
-    let (p1,ident) = (M.find op postfixs) in
-    let paren = paren && p1 <= p in
-
-    if paren then fprintf !fp "(";
-    if ident then fprintf !fp " %s " op
-             else fprintf !fp " %s"  op;
-    print_e e1 ~p:(p1-1);
-    if paren then fprintf !fp ")"
+    let (lparen, rparen, p1, space) = order_of_post op p e1 in
+    fprintf !fp "%s" lparen;
+    print_e e1 ~p:p1;
+    fprintf !fp "%s%s%s" space op rparen
 
   | EBin(e1, ".", e2) ->
     print_e e1;
@@ -111,24 +129,23 @@ let rec print_e ?(paren=true) ?(p=0) = function
     print_e e2
 
   | EBin(e1, op, e2) ->
-    let (p1,l) = (M.find op infixs) in
-    let paren = paren && (if l then p1 <= p else p1 < p) in
-    if paren then fprintf !fp "(";
-    print_e e1 ~p:(if l then p1 - 1 else p1 + 1);
+    let (lparen, rparen, p1, p2) = order_of_bin op p in
+    fprintf !fp "%s" lparen;
+    print_e e1 ~p:p1;
     fprintf !fp "%s" op;
-    print_e e2 ~p:p1;
-    if paren then fprintf !fp ")"
+    print_e e2 ~p:p2;
+    fprintf !fp "%s" rparen;
 
   | ECall(e1, es) ->
     print_e e1;
     fprintf !fp "(";
-    print_ls ", " (print_e ~paren:false) es;
+    print_ls ", " print_e es;
     fprintf !fp ")"
 
   | EArr(e1, es) ->
     print_e e1;
     fprintf !fp "[";
-    print_ls ", " (print_e ~paren:false) es;
+    print_ls ", " print_e es;
     fprintf !fp "]";
 
   | ECast(t, e) ->
@@ -158,12 +175,12 @@ let rec print_s ?(nest=true) (s:s):unit =
     ()
 
   | SExp e ->
-    print_e e ~paren:false;
+    print_e e;
     fprintf !fp ";"
 
   | SRet e ->
     fprintf !fp "return ";
-    print_e e ~paren:false;
+    print_e e;
     fprintf !fp ";"
 
   | SPackage s ->
@@ -179,13 +196,13 @@ let rec print_s ?(nest=true) (s:s):unit =
   | SLet (t, id, EEmpty) ->
     print_t t;
     fprintf !fp " ";
-    print_e id ~paren:false;
+    print_e id;
     fprintf !fp ";"
 
   | SLet (t, id, e) ->
     print_t t;
     fprintf !fp " ";
-    print_e id ~paren:false;
+    print_e id;
     fprintf !fp " = ";
     print_e e;
     fprintf !fp ";";
@@ -231,7 +248,7 @@ let rec print_s ?(nest=true) (s:s):unit =
         end
     in
     fprintf !fp "if (";
-    print_e e1 ~paren:false;
+    print_e e1;
     fprintf !fp ")";
     begin match e3 with
       | SEmpty ->
