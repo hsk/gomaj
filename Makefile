@@ -28,4 +28,4 @@ test: example/Test.gomaj gomajc
 	java example.Test
 
 clean:
-	rm -rf gomajc gomajc.opt example/*.java example/*.class src/.omakedb src/*.cm* src/parser.ml src/lexer.ml src/*.o
+	rm -rf gomajc gomajc.opt example/*.class src/.omakedb src/*.cm* src/parser.ml src/lexer.ml src/*.o
