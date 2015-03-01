@@ -71,7 +71,6 @@ and end_op p = function
   | EPre(op, t) -> let (lparen,_,_,_) = order_of_pre op p t in lparen <> "("
   | EPost(t,op) -> not (snd (M.find op postfixs))
   | _ -> false
-
 let fp = ref stdout
 
 let rec print_ls sep print_fun = function
@@ -219,7 +218,13 @@ let rec print_s ?(nest=true) (s:s):unit =
     print_s e ~nest:false
 
   | SFun (acs, t, id, ts, s) ->
+
+    fprintf !fp ".method ";
     print_as acs;
+    fprintf !fp "<init>()V\n";
+    fprintf !fp ".limit stack 255\n";
+    fprintf !fp ".limit locals 255\n";
+      
     let f (t, a) =
       print_t t;
       fprintf !fp " %s" a
@@ -229,6 +234,7 @@ let rec print_s ?(nest=true) (s:s):unit =
     print_ls ", " f ts;
     fprintf !fp ") ";
     print_s s ~nest:false;
+    fprintf !fp ".end method\n";
 
   | SIf(e1, e2, e3) ->
 
@@ -264,15 +270,21 @@ let rec print_s ?(nest=true) (s:s):unit =
     end
 
   | SClass (acs, id, super, ss) ->
+
+
+    fprintf !fp ".bytecode 49.0\n";
+    fprintf !fp ".source %s.java\n" id;
+
+    fprintf !fp ".class ";
     print_as acs;
-    fprintf !fp "class %s" id;
-    if super <> "" then
-      fprintf !fp " extends %s" super;
-    fprintf !fp " {\n";
-    block begin fun() ->
-      print_iter print_s "\n" ss
-    end;
-    fprintf !fp "%s}" !sp
+    fprintf !fp "%s\n" id;
+
+    if super = "" then
+      fprintf !fp ".super Object\n"
+    else
+      fprintf !fp ".super %s\n" super;
+
+    print_iter print_s "\n" ss
 
   | STrait (acs, id, ss) ->
     print_as acs;
@@ -297,8 +309,9 @@ let rec print_s ?(nest=true) (s:s):unit =
 
     ) ss
 
-let print_prog ffp (Prog(ls)) =
+let prog ffp (Prog(ls)) =
   sp := "";
   fp := ffp;
   print_ls "\n" print_s ls;
   fp := stdout
+

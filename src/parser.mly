@@ -128,8 +128,8 @@ stmt:
   | LBRACE stmts RBRACE { SBlock($2) }
   | IF LPAREN exp RPAREN stmt { SIf($3, $5, SEmpty) }
   | IF LPAREN exp RPAREN stmt ELSE stmt { SIf($3, $5, $7) }
-  | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
-  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
+  | ID COLON ID { SLet([], Ty $3, EVar $1, EEmpty) }
+  | ID COLON typ ASSIGN exp { SLet([], $3, EVar $1, $5) }
   | exp MATCH LBRACE cases RBRACE { SMatch($1, $4) }
 
 defs:
@@ -146,69 +146,67 @@ access:
   | FINAL { AFinal }
 
 accesses:
-  | access { [$1] }
+  | { [] }
   | access accesses { $1::$2 }
 
 adef:
-  | accesses def { SAccess($1, $2) }
   | def { $1 }
   | adef SEMICOLON { $1 }
 def:
   | PACKAGE { SPackage($1) }
 
-  | ID LPAREN RPAREN COLON ID ASSIGN stmt %prec prec_app {
+  | accesses ID LPAREN RPAREN COLON ID ASSIGN stmt %prec prec_app {
 
-      SFun(Ty $5, $1, [], addBlock $7)
+      SFun($1, Ty $6, $2, [], addBlock $8)
     }
-  | ID LPAREN prms RPAREN COLON ID ASSIGN stmt %prec prec_app {
+  | accesses ID LPAREN prms RPAREN COLON ID ASSIGN stmt %prec prec_app {
 
-      SFun(Ty $6, $1, $3, addBlock $8)
+      SFun($1, Ty $7, $2, $4, addBlock $9)
     }
-  | ID COLON ID { SLet(Ty $3, EVar $1, EEmpty) }
-  | ID COLON typ ASSIGN exp { SLet($3, EVar $1, $5) }
-  | class_ { $1 }
-  | ID TRAIT LBRACE trait_defs RBRACE { STrait($1, $4) }
+  | accesses ID COLON ID { SLet($1, Ty $4, EVar $2, EEmpty) }
+  | accesses ID COLON typ ASSIGN exp { SLet($1, $4, EVar $2, $6) }
+  | accesses ID TRAIT LBRACE trait_defs RBRACE { STrait($1, $2, $5) }
+
+  | accesses extends CLASS LBRACE RBRACE { SClass($1, fst $2, snd $2, []) }
+  | accesses extends CLASS LBRACE defs RBRACE { SClass($1, fst $2, snd $2, $5) }
+  | accesses extends CLASS LPAREN RPAREN {
+      SClass($1, fst $2, snd $2,[SCon(fst $2, [],SBlock [])])
+    }
+
+  | accesses extends CLASS LPAREN prms RPAREN {
+      let mems = List.map (fun (ty, id) ->
+        SLet([], ty, EVar id, EEmpty)
+      ) $5 in
+      let inits = List.map (fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      ) $5 in
+      SClass($1, fst $2, snd $2, SCon(fst $2, $5,SBlock inits)::mems)
+    }
+
+  | accesses extends CLASS LPAREN prms RPAREN LBRACE RBRACE {
+      let mems = List.map (fun (ty, id) ->
+        SLet([], ty, EVar id, EEmpty)
+      ) $5 in
+      let inits = List.map (fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      ) $5 in
+      SClass($1, fst $2, snd $2, SCon(fst $2, $5, SBlock inits)::mems)
+    }
+
+  | accesses extends CLASS LPAREN prms RPAREN LBRACE defs RBRACE {
+      let mems = List.map (fun (ty, id) ->
+        SLet([], ty, EVar id, EEmpty)
+      ) $5 in
+      let inits = List.map (fun (ty, id) ->
+        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
+      ) $5 in
+      SClass($1, fst $2, snd $2, SCon(fst $2, $5, SBlock inits)::mems @ $8)
+    }
 
 extends:
   | ID { ($1, "") }
   | ID EXTENDS  ID { ($3, $1) }
   | ID REXTENDS ID { ($1, $3) }
-class_:
-  | extends CLASS LBRACE RBRACE { SClass(fst $1, snd $1, []) }
-  | extends CLASS LBRACE defs RBRACE { SClass(fst $1, snd $1, $4) }
-  | extends CLASS LPAREN RPAREN {
-      SClass(fst $1, snd $1,[SCon(fst $1, [],SBlock [])])
-    }
-
-  | extends CLASS LPAREN prms RPAREN {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass(fst $1, snd $1, SCon(fst $1, $4,SBlock inits)::mems)
-    }
-
-  | extends CLASS LPAREN prms RPAREN LBRACE RBRACE {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass(fst $1, snd $1, SCon(fst $1, $4, SBlock inits)::mems)
-    }
-
-  | extends CLASS LPAREN prms RPAREN LBRACE defs RBRACE {
-      let mems = List.map begin fun (ty, id) ->
-        SLet(ty, EVar id, EEmpty)
-      end $4 in
-      let inits = List.map begin fun (ty, id) ->
-        SExp(EBin(EBin(EVar "this", ".", EVar id), "=", EVar id))
-      end $4 in
-      SClass(fst $1, snd $1, SCon(fst $1, $4, SBlock inits)::mems @ $7)
-    }
 
 
 trait_defs:
@@ -216,11 +214,11 @@ trait_defs:
   | trait_def trait_defs { $1 :: $2 }
 
 trait_def:
-  | ID LPAREN RPAREN COLON ID {
-      SFun(Ty $5, $1, [], SEmpty)
+  | accesses ID LPAREN RPAREN COLON ID {
+      SFun($1, Ty $6, $2, [], SEmpty)
     }
-  | ID LPAREN prms RPAREN COLON ID {
-      SFun(Ty $6, $1, $3, SEmpty)
+  | accesses ID LPAREN prms RPAREN COLON ID {
+      SFun($1, Ty $7, $2, $4, SEmpty)
     }
 prms:
   | prms_ {

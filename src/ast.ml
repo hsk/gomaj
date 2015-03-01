@@ -27,13 +27,12 @@ type s =
   | SEmpty
   | SExp of e
   | SRet of e
-  | SFun of t * string * (t * string) list * s
+  | SFun of a list * t * string * (t * string) list * s
   | SPackage of string
-  | SLet of t * e * e
-  | SClass of string * string * s list
+  | SLet of a list * t * e * e
+  | SClass of a list * string * string * s list
   | SCon of string * (t * string) list * s
-  | STrait of  string * s list
-  | SAccess of a list * s
+  | STrait of  a list * string * s list
   | SMatch of e * (string * s list) list
 
 type prog =

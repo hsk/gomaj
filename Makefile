@@ -1,10 +1,10 @@
 all: gomajc test fib hello
 
-gomajc: src/parser.mly src/lexer.mll src/ast.ml src/gen_java.ml src/main.ml
+gomajc: src/parser.mly src/lexer.mll src/ast.ml src/gen_java.ml src/compile.ml src/main.ml
 	cd src; ocamlyacc parser.mly
 	rm src/parser.mli
 	cd src; ocamllex lexer.mll
-	cd src; ocamlfind ocamlc ast.ml parser.ml lexer.ml gen_java.ml main.ml -o ../gomajc
+	cd src; ocamlfind ocamlc ast.ml parser.ml lexer.ml gen_java.ml compile.ml main.ml -o ../gomajc
 
 opt:
 	cd src; ocamlyacc parser.mly
